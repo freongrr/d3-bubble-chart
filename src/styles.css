@@ -1,0 +1,16 @@
+svg {
+    background-color: black;
+}
+
+.point {
+    fill: #FFF;
+    fill-opacity: 0.4;
+}
+
+.selected {
+    fill: cyan;
+}
+
+.selectionRectangle .selection {
+    stroke: yellow;
+}
