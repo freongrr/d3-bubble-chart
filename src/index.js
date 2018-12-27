@@ -38,8 +38,49 @@ const selectionBrush = d3.brush()
             // Hide brush rectangle
             const current = svg.select(".selectionRectangle");
             selectionBrush.move(current, null);
+        } else if (e.sourceEvent.x) {
+            const {x, y, ctrlKey} = e.sourceEvent;
+            const replace = !ctrlKey;
+            const currentData = pointSelection.data();
+            currentData.forEach(d => {
+                flagClicked(d, x, y, replace);
+            });
+            pointSelection.classed("selected", d => d.selected);
         }
     });
+
+function flagClicked(d, x, y, replace) {
+    // TODO : intersect1 should give me better results, but it does not
+    // I think the scaling is wrong here:
+    const scaledX = xScale(d.x);
+    const scaledY = yScale(d.y);
+
+    const distance = Math.sqrt(Math.pow(x - scaledX, 2) + Math.pow(y - scaledY, 2));
+    const intersect1 = distance < d.size;
+    if (intersect1) {
+        d.selected = true;
+    } else if (replace) {
+        d.selected = false;
+    }
+
+    const intersect2 = x >= scaledX - d.size && x <= scaledX + d.size &&
+        y >= scaledY - d.size && y <= scaledY + d.size;
+    if (intersect2) {
+        d.selected = true;
+    } else if (replace) {
+        d.selected = false;
+    }
+
+    if (intersect1 || intersect2) {
+        d.selected = true;
+    } else if (replace) {
+        d.selected = false;
+    }
+
+    if (intersect1 !== intersect2) {
+        console.log("Mismatch");
+    }
+}
 
 let pointSelection = svg.selectAll(".point");
 

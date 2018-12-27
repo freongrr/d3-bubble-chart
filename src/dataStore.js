@@ -4,7 +4,7 @@ const MIN_Y = 100;
 const MAX_Y = 300;
 const MIN_Z = 0;
 const MAX_Z = 100;
-const MIN_SIZE = 2;
+const MIN_SIZE = 5;
 const MAX_SIZE = 50;
 
 export default class DataStore {
