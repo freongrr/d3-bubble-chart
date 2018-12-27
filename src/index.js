@@ -30,14 +30,26 @@ const dataStore = new DataStore();
 dataStore.init(INITIAL_BUBBLES);
 
 const selectionBrush = d3.brush()
-    .on("brush", brushed);
+    .on("brush", brushed)
+    .on("end", () => {
+        const e = d3.event;
+        const extent = e.selection;
+        if (extent) {
+            // Hide brush rectangle
+            const current = svg.select(".selectionRectangle");
+            selectionBrush.move(current, null);
+        }
+    });
 
 let pointSelection = svg.selectAll(".point");
 
 function brushed() {
     const extent = d3.event.selection;
-    flagSelected(pointSelection.data(), extent[0][0], extent[0][1], extent[1][0], extent[1][1]);
-    pointSelection.classed("selected", d => d.selected);
+    if (extent) {
+        const currentData = pointSelection.data();
+        flagSelected(currentData, extent[0][0], extent[0][1], extent[1][0], extent[1][1]);
+        pointSelection.classed("selected", d => d.selected);
+    }
 }
 
 function flagSelected(data, left, top, right, bottom) {
@@ -145,7 +157,7 @@ function renderSelectionBrush() {
 refresh();
 
 // Random updates
-setInterval(() => {
-    dataStore.randomUpdate();
-    refresh();
-}, 250);
+// setInterval(() => {
+//     dataStore.randomUpdate();
+//     refresh();
+// }, 250);
