@@ -7,7 +7,7 @@ import DataStore from "./dataStore";
 const GRAPH_WIDTH = 800;
 const GRAPH_HEIGHT = 800;
 const INITIAL_BUBBLES = 100;
-const MARGIN = {top: 20, right: 20, bottom: 30, left: 30};
+const MARGIN = {top: 20, right: 20, bottom: 50, left: 60};
 
 const xScale = d3.scaleLinear()
     .domain([0, 5000])
@@ -61,17 +61,8 @@ function refresh() {
 }
 
 function adjustScale(scale, data, getter) {
-    let min = null, max = null;
-    data.forEach(d => {
-        const v = getter(d);
-        if (min === null || v < min) {
-            min = v;
-        }
-        if (max === null || v > max) {
-            max = v;
-        }
-    });
-    if (min !== null && max !== null) {
+    const [min, max] = d3.extent(data, getter);
+    if (min !== undefined && max !== undefined) {
         const margin = max === min ? (max / 10) : (max - min) / 10;
         scale.domain([min - margin, max + margin]);
     }
@@ -117,10 +108,26 @@ function renderAxes() {
         .attr("transform", `translate(0, ${GRAPH_HEIGHT - MARGIN.bottom})`)
         .call(xAxis);
 
+    const axisWidth = GRAPH_WIDTH - MARGIN.left - MARGIN.right;
+    axisLayer.append("text")
+        .attr("transform", `translate(${MARGIN.left + axisWidth / 2}, ${GRAPH_HEIGHT - 10})`)
+        .attr("class", "title")
+        .text("X axis");
+
     const yAxis = d3.axisLeft(yScale);
     axisLayer.append("g")
         .attr("transform", `translate(${MARGIN.left}, 0)`)
         .call(yAxis);
+
+    const axisHeight = GRAPH_HEIGHT - MARGIN.top - MARGIN.bottom;
+    axisLayer.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 10)
+        .attr("x", -axisHeight / 2)
+        .attr("dy", "1em")
+        .attr("class", "title")
+        .text("Y axis");
+
 }
 
 function renderSelectionBrush() {

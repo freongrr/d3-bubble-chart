@@ -25,3 +25,9 @@ svg {
     fill-opacity: 0.4;
     stroke: none;
 }
+
+.title {
+    font-family: sans-serif;
+    font-size: 14px;
+    text-anchor: middle;
+}
