@@ -2,6 +2,8 @@ const MIN_X = 500;
 const MAX_X = 2000;
 const MIN_Y = 100;
 const MAX_Y = 300;
+const MIN_Z = 0;
+const MAX_Z = 100;
 const MIN_SIZE = 2;
 const MAX_SIZE = 50;
 
@@ -43,6 +45,10 @@ export default class DataStore {
                 const newY = normalize(this.data[index].y * (0.5 + Math.random()), MIN_Y, MAX_Y);
                 console.log(`Updating Y of bubble at index ${index} to ${newY}`);
                 this.data[index].y = newY;
+            } else if (r < 0.6) {
+                const newZ = normalize(this.data[index].z * (0.5 + Math.random()), MIN_Z, MAX_Z);
+                console.log(`Updating Z of bubble at index ${index} to ${newZ}`);
+                this.data[index].z = newZ;
             }
         }
     }
@@ -53,6 +59,7 @@ function randomData() {
         id: Math.random() * 10000,
         x: MIN_X + Math.random() * (MAX_X - MIN_X),
         y: MIN_Y + Math.random() * (MAX_Y - MIN_Y),
+        z: MIN_Z + Math.random() * (MAX_Z - MIN_Z),
         size: MIN_SIZE + Math.random() * (MAX_SIZE - MIN_SIZE),
         selected: false
     };

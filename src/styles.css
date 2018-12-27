@@ -12,13 +12,16 @@ svg {
 
 .point {
     fill: #FFF;
-    fill-opacity: 0.4;
+    fill-opacity: 0.6;
 }
 
 .selected {
-    fill: cyan;
+    stroke: #0EF;
+    stroke-width: 2px;
 }
 
 .selectionRectangle .selection {
-    stroke: yellow;
+    fill: white;
+    fill-opacity: 0.4;
+    stroke: none;
 }

@@ -17,9 +17,9 @@ const yScale = d3.scaleLinear()
     .domain([0, 5000])
     .range([GRAPH_HEIGHT - MARGIN.bottom, MARGIN.top]);
 
-// var colorScale = d3.scaleLinear()
-//     .domain([-1, 0, 1])
-//     .range(["red", "white", "green"]);
+const colorScale = d3.scaleLinear()
+    .domain([2, 50])
+    .range(["#0F0", "#F00"]);
 
 const svg = d3.select("#root")
     .append("svg")
@@ -32,26 +32,32 @@ dataStore.init(INITIAL_BUBBLES);
 const selectionBrush = d3.brush()
     .on("brush", brushed);
 
-let pointSelection = svg.selectAll(".point")
-    .data(dataStore.getData());
-
-svg.append("g")
-    .attr("class", "selectionRectangle")
-    .call(selectionBrush);
+let pointSelection = svg.selectAll(".point");
 
 function brushed() {
     const extent = d3.event.selection;
-    pointSelection.each(d => d.selected = false);
     flagSelected(pointSelection.data(), extent[0][0], extent[0][1], extent[1][0], extent[1][1]);
     pointSelection.classed("selected", d => d.selected);
 }
 
 function flagSelected(data, left, top, right, bottom) {
     data.forEach(d => {
-        const adjustedX = xScale(d.x);
-        const adjustedY = yScale(d.y);
-        d.selected = (adjustedX >= left) && (adjustedX < right) && (adjustedY >= top) && (adjustedY < bottom);
+        const scaledX = xScale(d.x);
+        const scaledY = yScale(d.y);
+        d.selected = (scaledX >= left) && (scaledX < right) && (scaledY >= top) && (scaledY < bottom);
     });
+}
+
+function refresh() {
+    const newData = dataStore.getData();
+
+    // In a real life scenario, we should only update the scale/axes in extreme cases
+    adjustScale(xScale, newData, d => d.x);
+    adjustScale(yScale, newData, d => d.y);
+
+    renderBubbles();
+    renderAxes();
+    renderSelectionBrush();
 }
 
 function adjustScale(scale, data, getter) {
@@ -66,21 +72,9 @@ function adjustScale(scale, data, getter) {
         }
     });
     if (min !== null && max !== null) {
-        const margin = (max - min) / 10;
+        const margin = max === min ? (max / 10) : (max - min) / 10;
         scale.domain([min - margin, max + margin]);
     }
-}
-
-function refresh() {
-    const newData = dataStore.getData();
-
-    adjustScale(xScale, newData, d => d.x);
-    adjustScale(yScale, newData, d => d.y);
-
-    renderBubbles();
-
-    // In a real life scenario, we should only update the scale/axes in extreme cases
-    renderAxes();
 }
 
 function renderBubbles() {
@@ -92,7 +86,8 @@ function renderBubbles() {
     pointSelection
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
-        .attr("r", d => d.size);
+        .attr("r", d => d.size)
+        .style("fill", d => colorScale(d.z));
 
     // Delete elements that have been removed from the selection
     pointSelection.exit().remove();
@@ -103,7 +98,8 @@ function renderBubbles() {
         .attr("class", "point")
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
-        .attr("r", d => d.size);
+        .attr("r", d => d.size)
+        .style("fill", d => colorScale(d.z));
 
     pointSelection = newSelection.merge(pointSelection);
 }
@@ -123,6 +119,17 @@ function renderAxes() {
     axisLayer.append("g")
         .attr("transform", `translate(${MARGIN.left}, 0)`)
         .call(yAxis);
+}
+
+function renderSelectionBrush() {
+    const current = svg.select(".selectionRectangle");
+    if (current.empty()) {
+        svg.append("g")
+            .attr("class", "selectionRectangle")
+            .call(selectionBrush);
+    } else {
+        current.raise();
+    }
 }
 
 // Initial view
