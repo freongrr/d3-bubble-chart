@@ -80,28 +80,30 @@ function adjustScale(scale, data, getter) {
 function renderBubbles() {
     // Sets the data in the selection
     const newData = dataStore.getData();
-    pointSelection = pointSelection.data(newData, d => d.id);
+    const updatedSelection = pointSelection.data(newData, d => d.id);
 
     // Update current elements
-    pointSelection
-        .attr("cx", d => xScale(d.x))
-        .attr("cy", d => yScale(d.y))
-        .attr("r", d => d.size)
-        .style("fill", d => colorScale(d.z));
+    setupBubbles(updatedSelection);
 
     // Delete elements that have been removed from the selection
-    pointSelection.exit().remove();
+    updatedSelection.exit().remove();
 
     // Create elements for new what has been added to the selection
-    const newSelection = pointSelection.enter()
+    const newSelection = updatedSelection.enter()
         .append("circle")
-        .attr("class", "point")
+        .attr("class", "point");
+
+    setupBubbles(newSelection);
+
+    pointSelection = newSelection.merge(updatedSelection);
+}
+
+function setupBubbles(selection) {
+    selection
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", d => d.size)
         .style("fill", d => colorScale(d.z));
-
-    pointSelection = newSelection.merge(pointSelection);
 }
 
 function renderAxes() {
