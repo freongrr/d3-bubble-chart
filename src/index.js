@@ -5,6 +5,15 @@ import DataStore from "./dataStore";
 const WIDTH = 800;
 const HEIGHT = 800;
 const INITIAL_BUBBLES = 100;
+const MARGIN = {top: 20, right: 20, bottom: 30, left: 30};
+
+const xScale = d3.scaleLinear()
+    .domain([0, WIDTH])
+    .range([MARGIN.left, WIDTH - MARGIN.right]);
+
+const yScale = d3.scaleLinear()
+    .domain([0, HEIGHT])
+    .range([HEIGHT - MARGIN.bottom, MARGIN.top]);
 
 const svg = d3.select("#root")
     .append("svg")
@@ -33,7 +42,9 @@ function brushed() {
 
 function flagSelected(data, left, top, right, bottom) {
     data.forEach(d => {
-        d.selected = (d.x >= left) && (d.x < right) && (d.y >= top) && (d.y < bottom);
+        const adjustedX = xScale(d.x);
+        const adjustedY = yScale(d.y);
+        d.selected = (adjustedX >= left) && (adjustedX < right) && (adjustedY >= top) && (adjustedY < bottom);
     });
 }
 
@@ -43,8 +54,8 @@ function renderBubbles() {
     pointSelection = pointSelection.data(newData, d => d.id);
 
     pointSelection
-        .attr("cx", d => d.x)
-        .attr("cy", d => d.y)
+        .attr("cx", d => xScale(d.x))
+        .attr("cy", d => yScale(d.y))
         .attr("r", d => d.size);
 
     // Delete elements that have been removed from the selection
@@ -54,12 +65,26 @@ function renderBubbles() {
     const newSelection = pointSelection.enter()
         .append("circle")
         .attr("class", "point")
-        .attr("cx", d => d.x)
-        .attr("cy", d => d.y)
+        .attr("cx", d => xScale(d.x))
+        .attr("cy", d => yScale(d.y))
         .attr("r", d => d.size);
 
     pointSelection = newSelection.merge(pointSelection);
 }
+
+const xAxis = d3.axisBottom(xScale);
+const yAxis = d3.axisLeft(yScale);
+
+const axisLayer = svg.append("g")
+    .attr("class", "axisLayer");
+
+axisLayer.append("g")
+    .attr("transform", `translate(0, ${HEIGHT - MARGIN.bottom})`)
+    .call(xAxis);
+
+axisLayer.append("g")
+    .attr("transform", `translate(${MARGIN.left}, 0)`)
+    .call(yAxis);
 
 // Initial view
 renderBubbles();

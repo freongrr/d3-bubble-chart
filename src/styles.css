@@ -2,6 +2,14 @@ svg {
     background-color: black;
 }
 
+.axisLayer path, .axisLayer line {
+    stroke: #FFF;
+}
+
+.axisLayer text {
+    fill: #FFF;
+}
+
 .point {
     fill: #FFF;
     fill-opacity: 0.4;
