@@ -87,7 +87,7 @@ function refresh() {
 
     renderBubbles();
     renderAxes();
-    renderSelectionBrush();
+    // renderSelectionBrush();
 }
 
 function adjustScale(scale, data, getter) {
@@ -119,12 +119,36 @@ function renderBubbles() {
     pointSelection = newSelection.merge(updatedSelection);
 }
 
+// Define the div for the tooltip
+const div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
 function setupBubbles(selection) {
     selection
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", d => d.size)
-        .style("fill", d => colorScale(d.z));
+        .style("fill", d => colorScale(d.z))
+        .on("mouseover", (d, i, group) => {
+            div.transition()
+                .duration(200)
+                .style("opacity", 1);
+            div.html(`Bubble: ${d.id}
+                     <ul>
+                        <li>X: ${d.x}</li>
+                        <li>Y: ${d.y}</li>
+                        <li>Z: ${d.z}</li>
+                        <li>Size: ${d.size}</li>
+                     </ul>`)
+                .style("left", xScale(d.x) + "px")
+                .style("top", yScale(d.y) + "px");
+        })
+        .on("mouseout", function () {
+            div.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
 }
 
 function renderAxes() {
