@@ -3,6 +3,7 @@
 import * as d3 from "d3";
 import "./styles.css";
 import DataStore from "./dataStore";
+import tooltip from "./tooltip";
 
 const GRAPH_WIDTH = 800;
 const GRAPH_HEIGHT = 800;
@@ -37,27 +38,55 @@ const selectionBrush = d3.brush()
         if (extent) {
             // Hide brush rectangle
             const current = svg.select(".selectionRectangle");
-            selectionBrush.move(current, null);
+            // selectionBrush.move(current, null);
         } else if (e.sourceEvent.x) {
-            const {offsetX, offsetY, ctrlKey} = e.sourceEvent;
-            const replace = !ctrlKey;
-            const currentData = pointSelection.data();
-            currentData.forEach(d => flagClicked(d, offsetX, offsetY, replace));
-            pointSelection.classed("selected", d => d.selected);
+            // const {offsetX, offsetY, ctrlKey} = e.sourceEvent;
+            // const replace = !ctrlKey;
+            // const currentData = pointSelection.data();
+            // currentData.forEach(d => flagClicked(d, offsetX, offsetY, replace));
+            // pointSelection.classed("selected", d => d.selected);
         }
     });
 
-function flagClicked(d, x, y, replace) {
-    const scaledX = xScale(d.x);
-    const scaledY = yScale(d.y);
+// function flagClicked(d, x, y, replace) {
+//     const scaledX = xScale(d.x);
+//     const scaledY = yScale(d.y);
+//
+//     const distance = Math.sqrt(Math.pow(x - scaledX, 2) + Math.pow(y - scaledY, 2));
+//     if (distance < d.size) {
+//         d.selected = true;
+//     } else if (replace) {
+//         d.selected = false;
+//     }
+// }
 
-    const distance = Math.sqrt(Math.pow(x - scaledX, 2) + Math.pow(y - scaledY, 2));
-    if (distance < d.size) {
-        d.selected = true;
-    } else if (replace) {
-        d.selected = false;
-    }
-}
+// We only brush for the background, when clicking on a bubble we update the selection brush programmatically
+let dragStartLeft, dragStartTop;
+const drag = d3.drag()
+    .on("start", () => {
+        const {offsetX, offsetY} = d3.event.sourceEvent;
+        dragStartLeft = offsetX;
+        dragStartTop = offsetY;
+    }).on("drag", () => {
+        if (dragStartLeft && dragStartTop) {
+            const {offsetX, offsetY} = d3.event.sourceEvent;
+            const left = Math.min(dragStartLeft, offsetX);
+            const top = Math.min(dragStartTop, offsetY);
+            const right = Math.max(dragStartLeft, offsetX);
+            const bottom = Math.max(dragStartTop, offsetY);
+            const current = svg.select(".selectionRectangle");
+            selectionBrush.move(current, [[left, top], [right, bottom]]);
+        }
+    });
+
+const bubbleTooltip = tooltip()
+    .render(d => `Bubble: ${d.id}
+            <ul>
+               <li>X: ${d.x}</li>
+               <li>Y: ${d.y}</li>
+               <li>Z: ${d.z}</li>
+               <li>Size: ${d.size}</li>
+            </ul>`);
 
 let pointSelection = svg.selectAll(".point");
 
@@ -85,9 +114,9 @@ function refresh() {
     adjustScale(xScale, newData, d => d.x);
     adjustScale(yScale, newData, d => d.y);
 
+    renderSelectionBrush();
     renderBubbles();
     renderAxes();
-    // renderSelectionBrush();
 }
 
 function adjustScale(scale, data, getter) {
@@ -112,43 +141,30 @@ function renderBubbles() {
     // Create elements for new what has been added to the selection
     const newSelection = updatedSelection.enter()
         .append("circle")
-        .attr("class", "point");
+        .attr("class", "point")
+        .call(drag)
+        .on("click", d => {
+            const {ctrlKey, shiftKey} = d3.event;
+            if (!ctrlKey && !shiftKey) {
+                const currentData = pointSelection.data();
+                currentData.forEach(d => d.selected = false);
+            }
+            d.selected = true;
+            pointSelection.classed("selected", d => d.selected);
+        })
+        .call(bubbleTooltip);
 
     setupBubbles(newSelection);
 
     pointSelection = newSelection.merge(updatedSelection);
 }
 
-// Define the div for the tooltip
-const div = d3.select("body").append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
-
 function setupBubbles(selection) {
     selection
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", d => d.size)
-        .style("fill", d => colorScale(d.z))
-        .on("mouseover", (d, i, group) => {
-            div.transition()
-                .duration(200)
-                .style("opacity", 1);
-            div.html(`Bubble: ${d.id}
-                     <ul>
-                        <li>X: ${d.x}</li>
-                        <li>Y: ${d.y}</li>
-                        <li>Z: ${d.z}</li>
-                        <li>Size: ${d.size}</li>
-                     </ul>`)
-                .style("left", xScale(d.x) + "px")
-                .style("top", yScale(d.y) + "px");
-        })
-        .on("mouseout", function () {
-            div.transition()
-                .duration(500)
-                .style("opacity", 0);
-        });
+        .style("fill", d => colorScale(d.z));
 }
 
 function renderAxes() {
@@ -190,7 +206,7 @@ function renderSelectionBrush() {
             .attr("class", "selectionRectangle")
             .call(selectionBrush);
     } else {
-        current.raise();
+        // current.raise();
     }
 }
 

@@ -16,7 +16,7 @@ svg {
 }
 
 .point:hover {
-    fill-opacity: 1;
+    fill-opacity: 0.8;
 }
 
 .selected {
@@ -38,13 +38,16 @@ svg {
 
 div.tooltip {
     position: absolute;
-    /*width: 60px;*/
-    /*height: 28px;*/
-    padding: 0.5em;
+    padding: 1em 2em;
     font-family: sans-serif;
     font-size: 14px;
     background: #444;
     color: white;
     border-radius: 4px;
     pointer-events: none;
+    box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.5);
+}
+
+div.tooltip ul {
+    padding: 0 1em;
 }
