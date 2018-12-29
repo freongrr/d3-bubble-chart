@@ -1,9 +1,8 @@
-/* eslint-disable no-unused-vars */
-
 import * as d3 from "d3";
 import "./styles.css";
 import DataStore from "./dataStore";
-import tooltip from "./tooltip";
+import {createSelectionBox} from "./selectionBox";
+import {createTooltip} from "./tooltip";
 
 const GRAPH_WIDTH = 800;
 const GRAPH_HEIGHT = 800;
@@ -27,51 +26,15 @@ const svg = d3.select("#root")
     .attr("width", GRAPH_WIDTH)
     .attr("height", GRAPH_HEIGHT);
 
-const dataStore = new DataStore();
-dataStore.init(INITIAL_BUBBLES);
-
-const selectionBrush = d3.brush()
-    .on("brush", brushed)
-    .on("end", () => {
-        const {selection, sourceEvent} = d3.event;
-        const isDrag = sourceEvent && sourceEvent.type === "drag";
-        if (!isDrag && selection) {
-            hideSelectionRectangle();
-        }
-    });
+let pointSelection = svg.selectAll(".point");
 
 const selectionRectangle = svg.append("g")
-    .attr("class", "selectionRectangle")
-    .call(selectionBrush);
+    .attr("class", "selectionRectangle");
 
-// Because bubbles are rendered above the selection area,
-// we have to update the selection brush programmatically
-let dragStartLeft, dragStartTop;
-const drag = d3.drag()
-    .on("start", () => {
-        const {offsetX, offsetY} = d3.event.sourceEvent;
-        dragStartLeft = offsetX;
-        dragStartTop = offsetY;
-    })
-    .on("drag", () => {
-        if (dragStartLeft && dragStartTop) {
-            const {offsetX, offsetY} = d3.event.sourceEvent;
-            const left = Math.min(dragStartLeft, offsetX);
-            const top = Math.min(dragStartTop, offsetY);
-            const right = Math.max(dragStartLeft, offsetX);
-            const bottom = Math.max(dragStartTop, offsetY);
-            selectionBrush.move(selectionRectangle, [[left, top], [right, bottom]]);
-        }
-    })
-    .on("end", () => {
-        hideSelectionRectangle();
-    });
+const selectionBox = createSelectionBox(selectionRectangle)
+    .on("change", onSelectionChange);
 
-function hideSelectionRectangle() {
-    selectionBrush.move(selectionRectangle, null);
-}
-
-const bubbleTooltip = tooltip()
+const bubbleTooltip = createTooltip()
     .render(d => `Bubble: ${d.id}
             <ul>
                <li>X: ${d.x}</li>
@@ -80,33 +43,21 @@ const bubbleTooltip = tooltip()
                <li>Size: ${d.size}</li>
             </ul>`);
 
-let pointSelection = svg.selectAll(".point");
-
-function brushed() {
-    const extent = d3.event.selection;
-    if (extent) {
-        const currentData = pointSelection.data();
-        flagSelected(currentData, extent[0][0], extent[0][1], extent[1][0], extent[1][1]);
-        pointSelection.classed("selected", d => d.selected);
-    }
-}
-
-function flagSelected(data, left, top, right, bottom) {
-    data.forEach(d => {
+function onSelectionChange(left, top, right, bottom) {
+    pointSelection.each(d => {
         const scaledX = xScale(d.x);
         const scaledY = yScale(d.y);
         d.selected = (scaledX >= left) && (scaledX < right) && (scaledY >= top) && (scaledY < bottom);
     });
+    pointSelection.classed("selected", d => d.selected);
 }
 
-function refresh() {
-    const newData = dataStore.getData();
-
+function refresh(newData) {
     // In a real life scenario, we should only update the scale/axes in extreme cases
     adjustScale(xScale, newData, d => d.x);
     adjustScale(yScale, newData, d => d.y);
 
-    renderBubbles();
+    renderBubbles(newData);
     renderAxes();
 }
 
@@ -118,9 +69,8 @@ function adjustScale(scale, data, getter) {
     }
 }
 
-function renderBubbles() {
+function renderBubbles(newData) {
     // Sets the data in the selection
-    const newData = dataStore.getData();
     const updatedSelection = pointSelection.data(newData, d => d.id);
 
     // Update current elements
@@ -133,7 +83,6 @@ function renderBubbles() {
     const newSelection = updatedSelection.enter()
         .append("circle")
         .attr("class", "point")
-        .call(drag)
         .on("click", d => {
             const {ctrlKey, shiftKey} = d3.event;
             if (!ctrlKey && !shiftKey) {
@@ -143,6 +92,7 @@ function renderBubbles() {
             d.selected = true;
             pointSelection.classed("selected", d => d.selected);
         })
+        .call(selectionBox)
         .call(bubbleTooltip);
 
     setupBubbles(newSelection);
@@ -190,11 +140,14 @@ function renderAxes() {
         .text("Y axis");
 }
 
+const dataStore = new DataStore();
+dataStore.init(INITIAL_BUBBLES);
+
 // Initial view
-refresh();
+refresh(dataStore.getData());
 
 // Random updates
 setInterval(() => {
     dataStore.randomUpdate();
-    refresh();
+    refresh(dataStore.getData());
 }, 250);

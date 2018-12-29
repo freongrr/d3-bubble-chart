@@ -2,7 +2,7 @@ import * as d3 from "d3";
 
 const DEFAULT_RENDER_FN = (d) => JSON.stringify(d);
 
-export default function tooltip() {
+export function createTooltip() {
 
     let render = DEFAULT_RENDER_FN;
 
