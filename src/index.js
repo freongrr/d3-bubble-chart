@@ -33,51 +33,43 @@ dataStore.init(INITIAL_BUBBLES);
 const selectionBrush = d3.brush()
     .on("brush", brushed)
     .on("end", () => {
-        const e = d3.event;
-        const extent = e.selection;
-        if (extent) {
-            // Hide brush rectangle
-            const current = svg.select(".selectionRectangle");
-            // selectionBrush.move(current, null);
-        } else if (e.sourceEvent.x) {
-            // const {offsetX, offsetY, ctrlKey} = e.sourceEvent;
-            // const replace = !ctrlKey;
-            // const currentData = pointSelection.data();
-            // currentData.forEach(d => flagClicked(d, offsetX, offsetY, replace));
-            // pointSelection.classed("selected", d => d.selected);
+        const {selection, sourceEvent} = d3.event;
+        const isDrag = sourceEvent && sourceEvent.type === "drag";
+        if (!isDrag && selection) {
+            hideSelectionRectangle();
         }
     });
 
-// function flagClicked(d, x, y, replace) {
-//     const scaledX = xScale(d.x);
-//     const scaledY = yScale(d.y);
-//
-//     const distance = Math.sqrt(Math.pow(x - scaledX, 2) + Math.pow(y - scaledY, 2));
-//     if (distance < d.size) {
-//         d.selected = true;
-//     } else if (replace) {
-//         d.selected = false;
-//     }
-// }
+const selectionRectangle = svg.append("g")
+    .attr("class", "selectionRectangle")
+    .call(selectionBrush);
 
-// We only brush for the background, when clicking on a bubble we update the selection brush programmatically
+// Because bubbles are rendered above the selection area,
+// we have to update the selection brush programmatically
 let dragStartLeft, dragStartTop;
 const drag = d3.drag()
     .on("start", () => {
         const {offsetX, offsetY} = d3.event.sourceEvent;
         dragStartLeft = offsetX;
         dragStartTop = offsetY;
-    }).on("drag", () => {
+    })
+    .on("drag", () => {
         if (dragStartLeft && dragStartTop) {
             const {offsetX, offsetY} = d3.event.sourceEvent;
             const left = Math.min(dragStartLeft, offsetX);
             const top = Math.min(dragStartTop, offsetY);
             const right = Math.max(dragStartLeft, offsetX);
             const bottom = Math.max(dragStartTop, offsetY);
-            const current = svg.select(".selectionRectangle");
-            selectionBrush.move(current, [[left, top], [right, bottom]]);
+            selectionBrush.move(selectionRectangle, [[left, top], [right, bottom]]);
         }
+    })
+    .on("end", () => {
+        hideSelectionRectangle();
     });
+
+function hideSelectionRectangle() {
+    selectionBrush.move(selectionRectangle, null);
+}
 
 const bubbleTooltip = tooltip()
     .render(d => `Bubble: ${d.id}
@@ -114,7 +106,6 @@ function refresh() {
     adjustScale(xScale, newData, d => d.x);
     adjustScale(yScale, newData, d => d.y);
 
-    renderSelectionBrush();
     renderBubbles();
     renderAxes();
 }
@@ -197,17 +188,6 @@ function renderAxes() {
         .attr("dy", "1em")
         .attr("class", "title")
         .text("Y axis");
-}
-
-function renderSelectionBrush() {
-    const current = svg.select(".selectionRectangle");
-    if (current.empty()) {
-        svg.append("g")
-            .attr("class", "selectionRectangle")
-            .call(selectionBrush);
-    } else {
-        // current.raise();
-    }
 }
 
 // Initial view
