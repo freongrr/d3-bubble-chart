@@ -21,7 +21,8 @@ const colorScale = d3.scaleLinear()
     .domain([0, 50])
     .range(["#0F0", "#F00"]);
 
-const svg = d3.select("#root")
+const container = document.getElementById("root");
+const svg = d3.select(container)
     .append("svg")
     .attr("width", GRAPH_WIDTH)
     .attr("height", GRAPH_HEIGHT);
@@ -50,6 +51,32 @@ function onSelectionChange(left, top, right, bottom) {
         d.selected = (scaledX >= left) && (scaledX < right) && (scaledY >= top) && (scaledY < bottom);
     });
     pointSelection.classed("selected", d => d.selected);
+}
+
+function resizeAndRefresh() {
+    const {width, height} = getElementSizeWithoutPadding(container);
+
+    svg.attr("width", width)
+        .attr("height", height);
+
+    xScale.range([MARGIN.left, width - MARGIN.right]);
+    yScale.range([height - MARGIN.bottom, MARGIN.top]);
+
+    selectionBox.resize();
+
+    refresh(dataStore.getData());
+}
+
+function getElementSizeWithoutPadding(element) {
+    const containerStyle = window.getComputedStyle(element, null);
+    const left = parseInt(containerStyle.getPropertyValue("padding-left").replace("px", ""));
+    const right = parseInt(containerStyle.getPropertyValue("padding-right").replace("px", ""));
+    const top = parseInt(containerStyle.getPropertyValue("padding-top").replace("px", ""));
+    const bottom = parseInt(containerStyle.getPropertyValue("padding-bottom").replace("px", ""));
+    return {
+        width: container.clientWidth - left - right,
+        height: container.clientHeight - top - bottom
+    };
 }
 
 function refresh(newData) {
@@ -111,17 +138,20 @@ function setupBubbles(selection) {
 function renderAxes() {
     d3.select(".axisLayer").remove();
 
+    const svgWidth = svg.attr("width");
+    const svgHeight = svg.attr("height");
+
     const axisLayer = svg.append("g")
         .attr("class", "axisLayer");
 
     const xAxis = d3.axisBottom(xScale);
     axisLayer.append("g")
-        .attr("transform", `translate(0, ${GRAPH_HEIGHT - MARGIN.bottom})`)
+        .attr("transform", `translate(0, ${svgHeight - MARGIN.bottom})`)
         .call(xAxis);
 
-    const axisWidth = GRAPH_WIDTH - MARGIN.left - MARGIN.right;
+    const axisWidth = svgWidth - MARGIN.left - MARGIN.right;
     axisLayer.append("text")
-        .attr("transform", `translate(${MARGIN.left + axisWidth / 2}, ${GRAPH_HEIGHT - 10})`)
+        .attr("transform", `translate(${MARGIN.left + axisWidth / 2}, ${svgHeight - 10})`)
         .attr("class", "title")
         .text("X axis");
 
@@ -130,7 +160,7 @@ function renderAxes() {
         .attr("transform", `translate(${MARGIN.left}, 0)`)
         .call(yAxis);
 
-    const axisHeight = GRAPH_HEIGHT - MARGIN.top - MARGIN.bottom;
+    const axisHeight = svgHeight - MARGIN.top - MARGIN.bottom;
     axisLayer.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 10)
@@ -144,10 +174,12 @@ const dataStore = new DataStore();
 dataStore.init(INITIAL_BUBBLES);
 
 // Initial view
-refresh(dataStore.getData());
+setTimeout(() => resizeAndRefresh(), 1);
 
 // Random updates
 setInterval(() => {
     dataStore.randomUpdate();
     refresh(dataStore.getData());
 }, 250);
+
+window.addEventListener("resize", resizeAndRefresh);

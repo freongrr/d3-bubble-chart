@@ -65,5 +65,9 @@ export function createSelectionBox(rectangle) {
         return factory;
     };
 
+    factory.resize = () => {
+        rectangle.call(brush);
+    };
+
     return factory;
 }
