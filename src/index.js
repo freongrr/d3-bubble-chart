@@ -6,20 +6,22 @@ import {createTooltip} from "./tooltip";
 
 const GRAPH_WIDTH = 800;
 const GRAPH_HEIGHT = 800;
-const INITIAL_BUBBLES = 100;
+const INITIAL_BUBBLES = 10;
 const MARGIN = {top: 20, right: 20, bottom: 50, left: 60};
+const SIZE_SCALE = 0.075;
 
 const xScale = d3.scaleLinear()
-    .domain([0, 5000])
-    .range([MARGIN.left, GRAPH_WIDTH - MARGIN.right]);
+    .domain([0, 5000]);
 
 const yScale = d3.scaleLinear()
-    .domain([0, 5000])
-    .range([GRAPH_HEIGHT - MARGIN.bottom, MARGIN.top]);
+    .domain([0, 5000]);
 
 const colorScale = d3.scaleLinear()
-    .domain([0, 50])
+    .domain([0, 100])
     .range(["#0F0", "#F00"]);
+
+const sizeScale = d3.scaleLinear()
+    .domain([0, 50]);
 
 const container = document.getElementById("root");
 const svg = d3.select(container)
@@ -61,6 +63,7 @@ function resizeAndRefresh() {
 
     xScale.range([MARGIN.left, width - MARGIN.right]);
     yScale.range([height - MARGIN.bottom, MARGIN.top]);
+    sizeScale.range([0, (Math.min(width, height) * SIZE_SCALE)]);
 
     selectionBox.resize();
 
@@ -131,7 +134,7 @@ function setupBubbles(selection) {
     selection
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
-        .attr("r", d => d.size)
+        .attr("r", d => sizeScale(d.size))
         .style("fill", d => colorScale(d.z));
 }
 
