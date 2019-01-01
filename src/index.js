@@ -3,6 +3,7 @@ import "./styles.css";
 import DataStore from "./dataStore";
 import {createSelectionBox} from "./selectionBox";
 import {createTooltip} from "./tooltip";
+import {adjustScale} from "./autoScale";
 
 const GRAPH_WIDTH = 800;
 const GRAPH_HEIGHT = 800;
@@ -11,7 +12,7 @@ const MARGIN = {top: 20, right: 20, bottom: 50, left: 60};
 const SIZE_SCALE = 0.075;
 
 const xScale = d3.scaleLinear()
-    .domain([0, 5000]);
+    .domain([0, 0]);
 
 const yScale = d3.scaleLinear()
     .domain([0, 5000]);
@@ -83,20 +84,13 @@ function getElementSizeWithoutPadding(element) {
 }
 
 function refresh(newData) {
-    // In a real life scenario, we should only update the scale/axes in extreme cases
     adjustScale(xScale, newData, d => d.x);
     adjustScale(yScale, newData, d => d.y);
+    // TODO : ajust the size scale too!
 
-    renderBubbles(newData);
+    // TODO : only render the axes if the x/y scales have changed 
     renderAxes();
-}
-
-function adjustScale(scale, data, getter) {
-    const [min, max] = d3.extent(data, getter);
-    if (min !== undefined && max !== undefined) {
-        const margin = max === min ? (max / 10) : (max - min) / 10;
-        scale.domain([min - margin, max + margin]);
-    }
+    renderBubbles(newData);
 }
 
 function renderBubbles(newData) {

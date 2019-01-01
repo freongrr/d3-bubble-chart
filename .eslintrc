@@ -1,16 +1,20 @@
 {
   "env": {
     "browser": true,
-    "es6": true
+    "es6": true,
+    "jest/globals": true
   },
   "extends": [
-    "eslint:recommended"
+    "eslint:recommended",
+    "plugin:jest/recommended"
   ],
   "parser": "babel-eslint",
   "parserOptions": {
     "sourceType": "module"
   },
-  "plugins": [],
+  "plugins": [
+    "jest"
+  ],
   "rules": {
     "indent": [
       "error",
