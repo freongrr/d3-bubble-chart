@@ -1,12 +1,15 @@
 import * as d3 from "d3";
 
 const DEFAULT_RENDER_FN = (d) => JSON.stringify(d);
+const SHOW_DELAY = 500;
+const SHOW_DURATION = 200;
+const HIDE_DURATION = 500;
 
-export function createTooltip() {
+export function createTooltip(container) {
 
     let render = DEFAULT_RENDER_FN;
 
-    const tooltipDiv = d3.select("body")
+    const tooltipDiv = d3.select(container || "body")
         .append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
@@ -14,11 +17,10 @@ export function createTooltip() {
     function onMouseOver(d) {
         const {x, y} = d3.event;
         tooltipDiv.transition()
-            .duration(500)
+            .duration(SHOW_DELAY)
             .transition()
-            .duration(1)
-            .duration(200)
-            .style("opacity", 1);
+            .duration(SHOW_DURATION)
+            .style("opacity", 0.9);
         tooltipDiv.html(() => render(d))
             .style("left", (x + 10) + "px")
             .style("top", (y + 10) + "px");
@@ -26,7 +28,7 @@ export function createTooltip() {
 
     function onMouseOut() {
         tooltipDiv.transition()
-            .duration(500)
+            .duration(HIDE_DURATION)
             .style("opacity", 0);
     }
 
