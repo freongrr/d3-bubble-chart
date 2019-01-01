@@ -10,23 +10,22 @@ body {
 }
 
 svg {
-    background-color: black;
+    background-color: hsl(200, 15%, 15%);
 }
 
 .axisLayer path, .axisLayer line {
-    stroke: #FFF;
+    stroke: #AAA;
 }
 
 .axisLayer text {
-    fill: #FFF;
+    fill: #AAA;
 }
 
-.point {
-    fill: #FFF;
+.bubble {
     fill-opacity: 0.6;
 }
 
-.point:hover {
+.bubble:hover {
     fill-opacity: 0.8;
 }
 

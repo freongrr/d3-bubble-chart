@@ -11,18 +11,10 @@ const INITIAL_BUBBLES = 10;
 const MARGIN = {top: 20, right: 20, bottom: 50, left: 60};
 const SIZE_SCALE = 0.075;
 
-const xScale = d3.scaleLinear()
-    .domain([0, 0]);
-
-const yScale = d3.scaleLinear()
-    .domain([0, 5000]);
-
-const colorScale = d3.scaleLinear()
-    .domain([0, 100])
-    .range(["#0F0", "#F00"]);
-
-const sizeScale = d3.scaleLinear()
-    .domain([0, 50]);
+const xScale = d3.scaleLinear();
+const yScale = d3.scaleLinear();
+const colorScale = d3.scaleLinear().range(["#30bf30", "#bf3030"]);
+const sizeScale = d3.scaleLog();
 
 const container = document.getElementById("root");
 const svg = d3.select(container)
@@ -30,7 +22,7 @@ const svg = d3.select(container)
     .attr("width", GRAPH_WIDTH)
     .attr("height", GRAPH_HEIGHT);
 
-let pointSelection = svg.selectAll(".point");
+let bubbleSelection = svg.selectAll(".bubble");
 
 const selectionRectangle = svg.append("g")
     .attr("class", "selectionRectangle");
@@ -48,12 +40,12 @@ const bubbleTooltip = createTooltip()
             </ul>`);
 
 function onSelectionChange(left, top, right, bottom) {
-    pointSelection.each(d => {
+    bubbleSelection.each(d => {
         const scaledX = xScale(d.x);
         const scaledY = yScale(d.y);
         d.selected = (scaledX >= left) && (scaledX < right) && (scaledY >= top) && (scaledY < bottom);
     });
-    pointSelection.classed("selected", d => d.selected);
+    bubbleSelection.classed("selected", d => d.selected);
 }
 
 function resizeAndRefresh() {
@@ -64,7 +56,7 @@ function resizeAndRefresh() {
 
     xScale.range([MARGIN.left, width - MARGIN.right]);
     yScale.range([height - MARGIN.bottom, MARGIN.top]);
-    sizeScale.range([0, (Math.min(width, height) * SIZE_SCALE)]);
+    sizeScale.range([5, (Math.min(width, height) * SIZE_SCALE)]);
 
     selectionBox.resize();
 
@@ -86,7 +78,8 @@ function getElementSizeWithoutPadding(element) {
 function refresh(newData) {
     adjustScale(xScale, newData, d => d.x);
     adjustScale(yScale, newData, d => d.y);
-    // TODO : ajust the size scale too!
+    adjustScale(colorScale, newData, d => d.z);
+    adjustScale(sizeScale, newData, d => d.size, {marginRatio: 0});
 
     // TODO : only render the axes if the x/y scales have changed 
     renderAxes();
@@ -95,10 +88,10 @@ function refresh(newData) {
 
 function renderBubbles(newData) {
     // Sets the data in the selection
-    const updatedSelection = pointSelection.data(newData, d => d.id);
+    const updatedSelection = bubbleSelection.data(newData, d => d.id);
 
     // Update current elements
-    setupBubbles(updatedSelection);
+    setupBubbles(updatedSelection.transition().duration(200));
 
     // Delete elements that have been removed from the selection
     updatedSelection.exit().remove();
@@ -106,22 +99,22 @@ function renderBubbles(newData) {
     // Create elements for new what has been added to the selection
     const newSelection = updatedSelection.enter()
         .append("circle")
-        .attr("class", "point")
+        .attr("class", "bubble")
         .on("click", d => {
             const {ctrlKey, shiftKey} = d3.event;
             if (!ctrlKey && !shiftKey) {
-                const currentData = pointSelection.data();
+                const currentData = bubbleSelection.data();
                 currentData.forEach(d => d.selected = false);
             }
             d.selected = true;
-            pointSelection.classed("selected", d => d.selected);
+            bubbleSelection.classed("selected", d => d.selected);
         })
         .call(selectionBox)
         .call(bubbleTooltip);
 
     setupBubbles(newSelection);
 
-    pointSelection = newSelection.merge(updatedSelection);
+    bubbleSelection = newSelection.merge(updatedSelection);
 }
 
 function setupBubbles(selection) {
