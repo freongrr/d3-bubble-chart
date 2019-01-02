@@ -20,7 +20,7 @@ refreshData();
 function refreshData() {
     const rawData = dataStore.getData();
     const data = rawData.map(convertObject);
-    chart.setData(data);
+    chart.data(data);
 }
 
 function convertObject(object) {
