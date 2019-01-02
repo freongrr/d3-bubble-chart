@@ -34,3 +34,35 @@ function convertObject(object) {
         size: object.size,
     };
 }
+
+window.selectPoint = () => {
+    const data = dataStore.getData();
+    if (data.length > 0) {
+        const index = Math.floor(Math.random() * data.length);
+        const selection = [data[index].id];
+        chart.setSelectedIds(selection);
+    }
+};
+
+window.selectMultiplePoints = () => {
+    const data = dataStore.getData();
+    const ids = [];
+    data.forEach(d => {
+        if (Math.random() > 0.66) {
+            ids.push(d.id);
+        }
+    });
+    chart.setSelectedIds(ids);
+};
+
+window.selectedOneMorePoint = () => {
+    const data = dataStore.getData();
+    if (data.length > 0) {
+        const index = Math.floor(Math.random() * data.length);
+        const selectedIds = chart.getSelectedIds();
+        const id = data[index].id;
+        if (selectedIds.indexOf(id) < 0) {
+            chart.setSelectedIds([...selectedIds, id]);
+        }
+    }
+};

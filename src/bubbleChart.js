@@ -4,10 +4,12 @@ import {createSelectionBox} from "./selectionBox";
 import {createTooltip} from "./tooltip";
 import {adjustScale} from "./autoScale";
 
+const SELECTED_ATTRIBUTE = "_selected";
+// TODO : remove these 2?
 const GRAPH_WIDTH = 800;
 const GRAPH_HEIGHT = 800;
-const MARGIN = {top: 20, right: 20, bottom: 50, left: 60};
-const SIZE_SCALE = 0.075;
+const AXIS_MARGIN = {top: 20, right: 20, bottom: 50, left: 60};
+const BUBBLE_SIZE_SCALE = 0.075;
 
 export function createChart(container) {
     const xScale = d3.scaleLinear();
@@ -43,9 +45,13 @@ export function createChart(container) {
         bubbleSelection.each(d => {
             const scaledX = xScale(d.x);
             const scaledY = yScale(d.y);
-            d.selected = (scaledX >= left) && (scaledX < right) && (scaledY >= top) && (scaledY < bottom);
+            d[SELECTED_ATTRIBUTE] = (scaledX >= left) && (scaledX < right) && (scaledY >= top) && (scaledY < bottom);
         });
-        bubbleSelection.classed("selected", d => d.selected);
+        refreshSelection();
+    }
+
+    function refreshSelection() {
+        bubbleSelection.classed("selected", d => d[SELECTED_ATTRIBUTE]);
     }
 
     function resizeAndRefresh() {
@@ -54,9 +60,9 @@ export function createChart(container) {
         svg.attr("width", width)
             .attr("height", height);
 
-        xScale.range([MARGIN.left, width - MARGIN.right]);
-        yScale.range([height - MARGIN.bottom, MARGIN.top]);
-        sizeScale.range([5, (Math.min(width, height) * SIZE_SCALE)]);
+        xScale.range([AXIS_MARGIN.left, width - AXIS_MARGIN.right]);
+        yScale.range([height - AXIS_MARGIN.bottom, AXIS_MARGIN.top]);
+        sizeScale.range([5, (Math.min(width, height) * BUBBLE_SIZE_SCALE)]);
 
         selectionBox.resize();
 
@@ -78,9 +84,14 @@ export function createChart(container) {
     }
 
     function setData(newData) {
+        const selectedIds = getSelectedIds();
+
+        // Reset the _selected flag on the data
+        newData = newData.map(d => ({...d, [SELECTED_ATTRIBUTE]: selectedIds.indexOf(d.id) >= 0}));
+
         // Order by smaller bubbles to simplify selection
         // TODO : can I use d3's selection.order() here? 
-        newData = [...newData].sort((a, b) => {
+        newData = newData.sort((a, b) => {
             // noinspection JSUnresolvedVariable
             return b.size - a.size;
         });
@@ -112,12 +123,12 @@ export function createChart(container) {
             .attr("class", "bubble")
             .on("click", clicked => {
                 const {ctrlKey, shiftKey} = d3.event;
-                const select = !clicked.selected;
+                const select = !clicked[SELECTED_ATTRIBUTE];
                 if (!ctrlKey && !shiftKey) {
-                    bubbleSelection.each(d => d.selected = false);
+                    bubbleSelection.each(d => d[SELECTED_ATTRIBUTE] = false);
                 }
-                clicked.selected = select;
-                bubbleSelection.classed("selected", d => d.selected);
+                clicked[SELECTED_ATTRIBUTE] = select;
+                refreshSelection();
             })
             .call(selectionBox)
             .call(bubbleTooltip);
@@ -146,21 +157,21 @@ export function createChart(container) {
 
         const xAxis = d3.axisBottom(xScale);
         axisLayer.append("g")
-            .attr("transform", `translate(0, ${svgHeight - MARGIN.bottom})`)
+            .attr("transform", `translate(0, ${svgHeight - AXIS_MARGIN.bottom})`)
             .call(xAxis);
 
-        const axisWidth = svgWidth - MARGIN.left - MARGIN.right;
+        const axisWidth = svgWidth - AXIS_MARGIN.left - AXIS_MARGIN.right;
         axisLayer.append("text")
-            .attr("transform", `translate(${MARGIN.left + axisWidth / 2}, ${svgHeight - 10})`)
+            .attr("transform", `translate(${AXIS_MARGIN.left + axisWidth / 2}, ${svgHeight - 10})`)
             .attr("class", "title")
             .text("X axis");
 
         const yAxis = d3.axisLeft(yScale);
         axisLayer.append("g")
-            .attr("transform", `translate(${MARGIN.left}, 0)`)
+            .attr("transform", `translate(${AXIS_MARGIN.left}, 0)`)
             .call(yAxis);
 
-        const axisHeight = svgHeight - MARGIN.top - MARGIN.bottom;
+        const axisHeight = svgHeight - AXIS_MARGIN.top - AXIS_MARGIN.bottom;
         axisLayer.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 10)
@@ -168,6 +179,21 @@ export function createChart(container) {
             .attr("dy", "1em")
             .attr("class", "title")
             .text("Y axis");
+    }
+
+    function setSelectedIds(selectedIds) {
+        bubbleSelection.each(d => d[SELECTED_ATTRIBUTE] = selectedIds.indexOf(d.id) >= 0);
+        refreshSelection();
+    }
+
+    function getSelectedIds() {
+        const ids = [];
+        bubbleSelection.each(d => {
+            if (d[SELECTED_ATTRIBUTE]) {
+                ids.push(d.id);
+            }
+        });
+        return ids;
     }
 
     // Delay the first refresh to scale everything to the container
@@ -178,5 +204,7 @@ export function createChart(container) {
 
     return {
         setData,
+        getSelectedIds,
+        setSelectedIds,
     };
 }
