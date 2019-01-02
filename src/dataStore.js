@@ -46,7 +46,7 @@ export default class DataStore {
 
 function randomData() {
     return {
-        id: Math.random() * 10000,
+        id: "B" + parseInt(Math.random() * 10000),
         x: MIN_X + Math.random() * (MAX_X - MIN_X),
         y: MIN_Y + Math.random() * (MAX_Y - MIN_Y),
         z: MIN_Z + Math.random() * (MAX_Z - MIN_Z),

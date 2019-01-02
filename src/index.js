@@ -14,6 +14,15 @@ chart.axes()
     .xTitle("Time (s)")
     .yTitle("Money ($)");
 
+chart.tooltip()
+    .render(d => `Bubble: ${d.id}
+            <ul>
+               <li>Time: ${parseInt(d.x)} s</li>
+               <li>Money: $${parseInt(d.y)}</li>
+               <li>Other: ${parseInt(d.z)}</li>
+               <li>Size: ${parseInt(d.size)}</li>
+            </ul>`);
+
 // Initial data
 refreshData();
 

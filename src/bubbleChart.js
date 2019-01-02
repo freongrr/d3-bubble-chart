@@ -28,15 +28,7 @@ export function createChart(container) {
 
     const axes = createAxes(svg, xScale, yScale);
 
-    // TODO : expose
-    const bubbleTooltip = createTooltip(container)
-        .render(d => `Bubble: ${d.id}
-            <ul>
-               <li>X: ${d.x}</li>
-               <li>Y: ${d.y}</li>
-               <li>Z: ${d.z}</li>
-               <li>Size: ${d.size}</li>
-            </ul>`);
+    const bubbleTooltip = createTooltip(container);
 
     function onSelectionChange(left, top, right, bottom) {
         bubbleSelection.each(d => {
@@ -186,6 +178,7 @@ export function createChart(container) {
             }
         },
         axes: () => axes,
+        tooltip: () => bubbleTooltip,
     };
 
     return self;
