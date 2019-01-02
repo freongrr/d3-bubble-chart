@@ -13,12 +13,6 @@ const chart = createChart(container);
 // Initial data
 refreshData();
 
-// Random updates
-setInterval(() => {
-    dataStore.randomUpdate();
-    refreshData();
-}, 250);
-
 function refreshData() {
     const rawData = dataStore.getData();
     const data = rawData.map(convertObject);
@@ -34,6 +28,23 @@ function convertObject(object) {
         size: object.size,
     };
 }
+
+// Random updates
+let updateInterval;
+
+window.startUpdates = (delay = 250) => {
+    if (!updateInterval) {
+        updateInterval = setInterval(() => {
+            dataStore.randomUpdate();
+            refreshData();
+        }, delay);
+    }
+};
+
+window.pauseUpdates = () => {
+    clearInterval(updateInterval);
+    updateInterval = null;
+};
 
 window.selectPoint = () => {
     const data = dataStore.getData();

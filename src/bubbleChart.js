@@ -89,8 +89,7 @@ export function createChart(container) {
         // Reset the _selected flag on the data
         newData = newData.map(d => ({...d, [SELECTED_ATTRIBUTE]: selectedIds.indexOf(d.id) >= 0}));
 
-        // Order by smaller bubbles to simplify selection
-        // TODO : can I use d3's selection.order() here? 
+        // Sort by reverse size to allow selection of smaller bubbles
         newData = newData.sort((a, b) => {
             // noinspection JSUnresolvedVariable
             return b.size - a.size;
@@ -136,6 +135,8 @@ export function createChart(container) {
         setupBubbles(newSelection);
 
         bubbleSelection = newSelection.merge(updatedSelection);
+
+        bubbleSelection.order();
     }
 
     function setupBubbles(selection) {
