@@ -55,7 +55,7 @@ window.selectPoint = () => {
     if (data.length > 0) {
         const index = Math.floor(Math.random() * data.length);
         const selection = [data[index].id];
-        chart.setSelectedIds(selection);
+        chart.selectedIds(selection);
     }
 };
 
@@ -67,17 +67,17 @@ window.selectMultiplePoints = () => {
             ids.push(d.id);
         }
     });
-    chart.setSelectedIds(ids);
+    chart.selectedIds(ids);
 };
 
 window.selectedOneMorePoint = () => {
     const data = dataStore.getData();
     if (data.length > 0) {
         const index = Math.floor(Math.random() * data.length);
-        const selectedIds = chart.getSelectedIds();
+        const selectedIds = chart.selectedIds();
         const id = data[index].id;
         if (selectedIds.indexOf(id) < 0) {
-            chart.setSelectedIds([...selectedIds, id]);
+            chart.selectedIds([...selectedIds, id]);
         }
     }
 };

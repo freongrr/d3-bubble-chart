@@ -32,19 +32,19 @@ export function createTooltip(container) {
             .style("opacity", 0);
     }
 
-    const factory = selection => {
+    const self = selection => {
         return selection.on("mouseover", onMouseOver)
             .on("mouseout", onMouseOut);
     };
 
-    factory.render = fn => {
+    self.render = fn => {
         if (fn === undefined) {
             return render;
         } else {
             render = fn;
-            return factory;
+            return self;
         }
     };
 
-    return factory;
+    return self;
 }

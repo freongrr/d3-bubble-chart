@@ -168,10 +168,25 @@ export function createChart(container) {
     // TODO : monitor changes in the size of the container instead! 
     window.addEventListener("resize", resizeAndRefresh);
 
-    return {
-        setData: setData,
-        getSelectedIds: getSelectedIds,
-        setSelectedIds: setSelectedIds,
-        axes: () => axes
+    const self = {
+        data: (data) => {
+            if (data === undefined) {
+                return bubbleSelection.data();
+            } else {
+                setData(data);
+                return self;
+            }
+        },
+        selectedIds: (ids) => {
+            if (ids === undefined) {
+                return getSelectedIds();
+            } else {
+                setSelectedIds(ids);
+                return self;
+            }
+        },
+        axes: () => axes,
     };
+
+    return self;
 }

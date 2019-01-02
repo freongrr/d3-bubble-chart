@@ -55,19 +55,19 @@ export function createSelectionBox(rectangle) {
             hideSelectionRectangle();
         });
 
-    const factory = (selection) => {
+    const self = (selection) => {
         selection.call(drag);
-        return factory;
+        return self;
     };
 
-    factory.on = (type, cb) => {
+    self.on = (type, cb) => {
         callbacks[type] = cb;
-        return factory;
+        return self;
     };
 
-    factory.resize = () => {
+    self.resize = () => {
         rectangle.call(brush);
     };
 
-    return factory;
+    return self;
 }
