@@ -7,6 +7,7 @@ import {createAxes} from "./twoAxes";
 
 const SELECTED_ATTRIBUTE = "_selected";
 const BUBBLE_SIZE_SCALE = 0.075;
+const BUBBLE_TRANSITION_DURATION = 200;
 
 export function createChart(container) {
     const xScale = d3.scaleLinear();
@@ -103,10 +104,16 @@ export function createChart(container) {
         const updatedSelection = bubbleSelection.data(newData, d => d.id);
 
         // Update current elements
-        setupBubbles(updatedSelection.transition().duration(200));
+        updatedSelection.transition().duration(BUBBLE_TRANSITION_DURATION)
+            .attr("cx", d => xScale(d.x))
+            .attr("cy", d => yScale(d.y))
+            .attr("r", d => sizeScale(d.size))
+            .style("fill", d => colorScale(d.z));
 
         // Delete elements that have been removed from the selection
-        updatedSelection.exit().remove();
+        updatedSelection.exit().transition().duration(BUBBLE_TRANSITION_DURATION)
+            .attr("r", 0)
+            .remove();
 
         // Create elements for new what has been added to the selection
         const newSelection = updatedSelection.enter()
@@ -129,19 +136,16 @@ export function createChart(container) {
             .call(selectionBox)
             .call(bubbleTooltip);
 
-        setupBubbles(newSelection);
+        newSelection
+            .attr("cx", d => xScale(d.x))
+            .attr("cy", d => yScale(d.y))
+            .style("fill", d => colorScale(d.z))
+            .transition().duration(BUBBLE_TRANSITION_DURATION)
+            .attr("r", d => sizeScale(d.size));
 
         bubbleSelection = newSelection.merge(updatedSelection);
 
         bubbleSelection.order();
-    }
-
-    function setupBubbles(selection) {
-        selection
-            .attr("cx", d => xScale(d.x))
-            .attr("cy", d => yScale(d.y))
-            .attr("r", d => sizeScale(d.size))
-            .style("fill", d => colorScale(d.z));
     }
 
     function setSelectedIds(selectedIds) {

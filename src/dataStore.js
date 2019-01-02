@@ -31,15 +31,25 @@ export default class DataStore {
             const index = Math.floor(Math.random() * this.data.length);
             if (r < 0.2) {
                 this.data.splice(index, 1);
-            } else if (r < 0.3) {
-                this.data[index].size = normalize(this.data[index].size * (0.5 + Math.random()), MAX_SIZE, MIN_SIZE);
-            } else if (r < 0.4) {
-                this.data[index].x = normalize(this.data[index].x * (0.5 + Math.random()), MIN_X, MAX_X);
-            } else if (r < 0.5) {
-                this.data[index].y = normalize(this.data[index].y * (0.5 + Math.random()), MIN_Y, MAX_Y);
-            } else if (r < 0.6) {
-                this.data[index].z = normalize(this.data[index].z * (0.5 + Math.random()), MIN_Z, MAX_Z);
+            } else {
+                this.randomUpdateValue(this.data[index]);
             }
+        }
+    }
+
+    randomUpdateValue(d) {
+        const r = Math.random();
+        if (r < 0.1) {
+            d.size = normalize(d.size * (0.5 + Math.random()), MAX_SIZE, MIN_SIZE);
+        }
+        if (r < 0.2) {
+            d.x = normalize(d.x * (0.5 + Math.random()), MIN_X, MAX_X);
+        }
+        if (r < 0.3) {
+            d.y = normalize(d.y * (0.5 + Math.random()), MIN_Y, MAX_Y);
+        }
+        if (r < 0.4) {
+            d.z = normalize(d.z * (0.5 + Math.random()), MIN_Z, MAX_Z);
         }
     }
 }
