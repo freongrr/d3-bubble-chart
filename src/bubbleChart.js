@@ -3,12 +3,9 @@ import "./bubbleChart.css";
 import {createSelectionBox} from "./selectionBox";
 import {createTooltip} from "./tooltip";
 import {adjustScale} from "./autoScale";
+import {createAxes} from "./twoAxes";
 
 const SELECTED_ATTRIBUTE = "_selected";
-// TODO : remove these 2?
-const GRAPH_WIDTH = 800;
-const GRAPH_HEIGHT = 800;
-const AXIS_MARGIN = {top: 20, right: 20, bottom: 50, left: 60};
 const BUBBLE_SIZE_SCALE = 0.075;
 
 export function createChart(container) {
@@ -19,9 +16,7 @@ export function createChart(container) {
 
     const svg = d3.select(container)
         .append("svg")
-        .attr("class", "bubbleChart")
-        .attr("width", GRAPH_WIDTH)
-        .attr("height", GRAPH_HEIGHT);
+        .attr("class", "bubbleChart");
 
     let bubbleSelection = svg.selectAll(".bubble");
 
@@ -30,6 +25,8 @@ export function createChart(container) {
 
     const selectionBox = createSelectionBox(selectionRectangle)
         .on("change", onSelectionChange);
+
+    const axes = createAxes(svg, xScale, yScale);
 
     // TODO : expose
     const bubbleTooltip = createTooltip(container)
@@ -60,15 +57,15 @@ export function createChart(container) {
         svg.attr("width", width)
             .attr("height", height);
 
-        xScale.range([AXIS_MARGIN.left, width - AXIS_MARGIN.right]);
-        yScale.range([height - AXIS_MARGIN.bottom, AXIS_MARGIN.top]);
+        axes.resize(width, height);
+
         sizeScale.range([5, (Math.min(width, height) * BUBBLE_SIZE_SCALE)]);
 
         selectionBox.resize();
 
         // Set the same data to force a refresh
         const currentData = bubbleSelection.data();
-        setData(currentData);
+        setData(currentData, true);
     }
 
     function getElementSizeWithoutPadding(element) {
@@ -83,7 +80,7 @@ export function createChart(container) {
         };
     }
 
-    function setData(newData) {
+    function setData(newData, refreshAxes) {
         const selectedIds = getSelectedIds();
 
         // Reset the _selected flag on the data
@@ -95,14 +92,17 @@ export function createChart(container) {
             return b.size - a.size;
         });
 
-        adjustScale(xScale, newData, d => d.x);
-        adjustScale(yScale, newData, d => d.y);
+        let updateAxes = refreshAxes;
+        updateAxes |= adjustScale(xScale, newData, d => d.x);
+        updateAxes |= adjustScale(yScale, newData, d => d.y);
         // TODO : take in account the number of values in the domain (e.g. 3 or 4 colors)
         adjustScale(colorScale, newData, d => d.z);
         adjustScale(sizeScale, newData, d => d.size, {marginRatio: 0});
 
-        // TODO : only render the axes if the x/y scales have changed 
-        renderAxes();
+        if (updateAxes) {
+            axes.refresh();
+        }
+
         renderBubbles(newData);
     }
 
@@ -145,41 +145,6 @@ export function createChart(container) {
             .attr("cy", d => yScale(d.y))
             .attr("r", d => sizeScale(d.size))
             .style("fill", d => colorScale(d.z));
-    }
-
-    function renderAxes() {
-        d3.select(".axisLayer").remove();
-
-        const svgWidth = svg.attr("width");
-        const svgHeight = svg.attr("height");
-
-        const axisLayer = svg.append("g")
-            .attr("class", "axisLayer");
-
-        const xAxis = d3.axisBottom(xScale);
-        axisLayer.append("g")
-            .attr("transform", `translate(0, ${svgHeight - AXIS_MARGIN.bottom})`)
-            .call(xAxis);
-
-        const axisWidth = svgWidth - AXIS_MARGIN.left - AXIS_MARGIN.right;
-        axisLayer.append("text")
-            .attr("transform", `translate(${AXIS_MARGIN.left + axisWidth / 2}, ${svgHeight - 10})`)
-            .attr("class", "title")
-            .text("X axis");
-
-        const yAxis = d3.axisLeft(yScale);
-        axisLayer.append("g")
-            .attr("transform", `translate(${AXIS_MARGIN.left}, 0)`)
-            .call(yAxis);
-
-        const axisHeight = svgHeight - AXIS_MARGIN.top - AXIS_MARGIN.bottom;
-        axisLayer.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 10)
-            .attr("x", -axisHeight / 2)
-            .attr("dy", "1em")
-            .attr("class", "title")
-            .text("Y axis");
     }
 
     function setSelectedIds(selectedIds) {

@@ -15,6 +15,9 @@ export function adjustScale(scale, data, getter, options) {
         const margin = max === min ? (max * options.marginRatio) : (max - min) * options.marginRatio;
         // TODO : smooth transition
         scale.domain([min - margin, max + margin]);
+        return true;
+    } else {
+        return false;
     }
 }
 
