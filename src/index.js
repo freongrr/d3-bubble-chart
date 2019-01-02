@@ -10,6 +10,10 @@ dataStore.init(INITIAL_BUBBLES);
 const container = document.getElementById("root");
 const chart = createChart(container);
 
+chart.axes()
+    .xTitle("Time (s)")
+    .yTitle("Money ($)");
+
 // Initial data
 refreshData();
 

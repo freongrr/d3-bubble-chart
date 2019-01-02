@@ -65,7 +65,7 @@ export function createChart(container) {
 
         // Set the same data to force a refresh
         const currentData = bubbleSelection.data();
-        setData(currentData, true);
+        setData(currentData);
     }
 
     function getElementSizeWithoutPadding(element) {
@@ -80,7 +80,7 @@ export function createChart(container) {
         };
     }
 
-    function setData(newData, refreshAxes) {
+    function setData(newData) {
         const selectedIds = getSelectedIds();
 
         // Reset the _selected flag on the data
@@ -92,7 +92,7 @@ export function createChart(container) {
             return b.size - a.size;
         });
 
-        let updateAxes = refreshAxes;
+        let updateAxes = false;
         updateAxes |= adjustScale(xScale, newData, d => d.x);
         updateAxes |= adjustScale(yScale, newData, d => d.y);
         // TODO : take in account the number of values in the domain (e.g. 3 or 4 colors)
@@ -169,8 +169,9 @@ export function createChart(container) {
     window.addEventListener("resize", resizeAndRefresh);
 
     return {
-        setData,
-        getSelectedIds,
-        setSelectedIds,
+        setData: setData,
+        getSelectedIds: getSelectedIds,
+        setSelectedIds: setSelectedIds,
+        axes: () => axes
     };
 }
