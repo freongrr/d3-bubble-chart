@@ -8,6 +8,17 @@ export function createSelectionBox(rectangle) {
     const callbacks = {};
 
     const brush = d3.brush()
+        .on("start", () => {
+            const {sourceEvent} = d3.event;
+            const isMouseDown = sourceEvent && sourceEvent.type === "mousedown";
+            if (isMouseDown) {
+                const cb = callbacks["change"];
+                if (cb) {
+                    // HACK : fire a dummy event to deselect everything 
+                    cb(0, 0, 0, 0);
+                }
+            }
+        })
         .on("brush", onBrush)
         .on("end", () => {
             const {selection, sourceEvent} = d3.event;

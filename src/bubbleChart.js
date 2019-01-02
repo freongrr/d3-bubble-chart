@@ -114,7 +114,12 @@ export function createChart(container) {
             .attr("class", "bubble")
             .on("click", clicked => {
                 const {ctrlKey, shiftKey} = d3.event;
-                const select = !clicked[SELECTED_ATTRIBUTE];
+                let select = true;
+                // Toggle the selection when using a meta key or when it's the only selected bubble
+                if (ctrlKey || shiftKey || getSelectedIds().length === 1) {
+                    select = !clicked[SELECTED_ATTRIBUTE];
+                }
+                // Deselect everything else when not using a meta key
                 if (!ctrlKey && !shiftKey) {
                     bubbleSelection.each(d => d[SELECTED_ATTRIBUTE] = false);
                 }
