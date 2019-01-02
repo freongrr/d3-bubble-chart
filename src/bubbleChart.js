@@ -10,12 +10,6 @@ const MARGIN = {top: 20, right: 20, bottom: 50, left: 60};
 const SIZE_SCALE = 0.075;
 
 export function createChart(container) {
-    let getId = (d) => d.id;
-    let getX = () => 0;
-    let getY = () => 0;
-    let getZ = () => 0;
-    let getSize = () => 0;
-
     const xScale = d3.scaleLinear();
     const yScale = d3.scaleLinear();
     const colorScale = d3.scaleLinear().range(["#30bf30", "#bf3030"]);
@@ -37,18 +31,18 @@ export function createChart(container) {
 
     // TODO : expose
     const bubbleTooltip = createTooltip(container)
-        .render(d => `Bubble: ${getId(d)}
+        .render(d => `Bubble: ${d.id}
             <ul>
-               <li>X: ${getX(d)}</li>
-               <li>Y: ${getY(d)}</li>
-               <li>Z: ${getZ(d)}</li>
-               <li>Size: ${getSize(d)}</li>
+               <li>X: ${d.x}</li>
+               <li>Y: ${d.y}</li>
+               <li>Z: ${d.z}</li>
+               <li>Size: ${d.size}</li>
             </ul>`);
 
     function onSelectionChange(left, top, right, bottom) {
         bubbleSelection.each(d => {
-            const scaledX = xScale(getX(d));
-            const scaledY = yScale(getY(d));
+            const scaledX = xScale(d.x);
+            const scaledY = yScale(d.y);
             d.selected = (scaledX >= left) && (scaledX < right) && (scaledY >= top) && (scaledY < bottom);
         });
         bubbleSelection.classed("selected", d => d.selected);
@@ -84,15 +78,18 @@ export function createChart(container) {
     }
 
     function setData(newData) {
-        // Order by smaller bubbles to simplify selection 
+        // Order by smaller bubbles to simplify selection
+        // TODO : can I use d3's selection.order() here? 
         newData = [...newData].sort((a, b) => {
-            return getSize(b) - getSize(a);
+            // noinspection JSUnresolvedVariable
+            return b.size - a.size;
         });
 
-        adjustScale(xScale, newData, getX);
-        adjustScale(yScale, newData, getY);
-        adjustScale(colorScale, newData, getZ);
-        adjustScale(sizeScale, newData, getSize, {marginRatio: 0});
+        adjustScale(xScale, newData, d => d.x);
+        adjustScale(yScale, newData, d => d.y);
+        // TODO : take in account the number of values in the domain (e.g. 3 or 4 colors)
+        adjustScale(colorScale, newData, d => d.z);
+        adjustScale(sizeScale, newData, d => d.size, {marginRatio: 0});
 
         // TODO : only render the axes if the x/y scales have changed 
         renderAxes();
@@ -101,7 +98,7 @@ export function createChart(container) {
 
     function renderBubbles(newData) {
         // Sets the data in the selection
-        const updatedSelection = bubbleSelection.data(newData, getId);
+        const updatedSelection = bubbleSelection.data(newData, d => d.id);
 
         // Update current elements
         setupBubbles(updatedSelection.transition().duration(200));
@@ -132,10 +129,10 @@ export function createChart(container) {
 
     function setupBubbles(selection) {
         selection
-            .attr("cx", d => xScale(getX(d)))
-            .attr("cy", d => yScale(getY(d)))
-            .attr("r", d => sizeScale(getSize(d)))
-            .style("fill", d => colorScale(getZ(d)));
+            .attr("cx", d => xScale(d.x))
+            .attr("cy", d => yScale(d.y))
+            .attr("r", d => sizeScale(d.size))
+            .style("fill", d => colorScale(d.z));
     }
 
     function renderAxes() {
@@ -179,49 +176,7 @@ export function createChart(container) {
     // TODO : monitor changes in the size of the container instead! 
     window.addEventListener("resize", resizeAndRefresh);
 
-    const factory = {
-        id: (fn) => {
-            if (fn === undefined) {
-                return getId;
-            } else {
-                getId = fn;
-                return factory;
-            }
-        },
-        x: (fn) => {
-            if (fn === undefined) {
-                return getX;
-            } else {
-                getX = fn;
-                return factory;
-            }
-        },
-        y: (fn) => {
-            if (fn === undefined) {
-                return getY;
-            } else {
-                getY = fn;
-                return factory;
-            }
-        },
-        z: (fn) => {
-            if (fn === undefined) {
-                return getZ;
-            } else {
-                getZ = fn;
-                return factory;
-            }
-        },
-        size: (fn) => {
-            if (fn === undefined) {
-                return getSize;
-            } else {
-                getSize = fn;
-                return factory;
-            }
-        },
-        setData: setData
+    return {
+        setData,
     };
-
-    return factory;
 }

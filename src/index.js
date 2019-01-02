@@ -8,18 +8,29 @@ const dataStore = new DataStore();
 dataStore.init(INITIAL_BUBBLES);
 
 const container = document.getElementById("root");
-const chart = createChart(container)
-    .id(d => d.id)
-    .x(d => d.x)
-    .y(d => d.y)
-    .z(d => d.z)
-    .size(d => d.size);
+const chart = createChart(container);
 
 // Initial data
-chart.setData(dataStore.getData());
+refreshData();
 
 // Random updates
 setInterval(() => {
     dataStore.randomUpdate();
-    chart.setData(dataStore.getData());
+    refreshData();
 }, 250);
+
+function refreshData() {
+    const rawData = dataStore.getData();
+    const data = rawData.map(convertObject);
+    chart.setData(data);
+}
+
+function convertObject(object) {
+    return {
+        id: object.id,
+        x: object.x,
+        y: object.y,
+        z: object.z,
+        size: object.size,
+    };
+}
