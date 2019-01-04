@@ -1,15 +1,12 @@
 {
   "name": "d3-bubble-chart",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "build": "webpack --mode production --progress --colors",
     "stats": "webpack --mode production --progress --colors --display-error-details --profile --json > stats.json",
     "test": "jest"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@git@github.com:freongrr/d3-bubble-chart.git"
-  },
+  "repository": "https://github.com/freongrr/d3-bubble-chart",
   "author": "Fabien Cortina <fabien.cortina@gmail.com>",
   "license": "ISC",
   "bugs": {
