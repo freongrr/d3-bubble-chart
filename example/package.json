@@ -1,28 +1,14 @@
 {
-  "name": "d3-bubble-chart",
+  "name": "d3-bubble-chart-example",
   "version": "1.0.0",
   "scripts": {
-    "build": "webpack --mode production --progress --colors",
-    "stats": "webpack --mode production --progress --colors --display-error-details --profile --json > stats.json",
-    "test": "jest"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@git@github.com:freongrr/d3-bubble-chart.git"
+    "start": "webpack-dev-server --mode development --progress --colors --open"
   },
   "author": "Fabien Cortina <fabien.cortina@gmail.com>",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/freongrr/d3-bubble-chart/issues"
-  },
-  "main": "dist/d3-bubble-chart.js",
-  "jsnext:main": "src/index.js",
-  "files": [
-    "dist",
-    "src"
-  ],
   "dependencies": {
-    "d3": "5.7.0"
+    "d3": "5.7.0",
+    "d3-bubble-chart": "file:../d3-bubble-chart-1.0.0.tgz"
   },
   "devDependencies": {
     "@babel/core": "7.2.2",
@@ -35,12 +21,14 @@
     "eslint": "5.11.1",
     "eslint-loader": "2.1.1",
     "eslint-plugin-jest": "22.1.2",
+    "html-webpack-plugin": "3.2.0",
     "identity-obj-proxy": "3.0.0",
     "jest": "23.6.0",
     "source-map-loader": "0.2.4",
     "style-loader": "0.23.1",
     "webpack": "4.28.3",
-    "webpack-cli": "3.2.0"
+    "webpack-cli": "3.2.0",
+    "webpack-dev-server": "3.1.14"
   },
   "jest": {
     "moduleNameMapper": {

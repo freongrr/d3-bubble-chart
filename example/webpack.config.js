@@ -1,8 +1,7 @@
 /* global require:false, module:false, __dirname:false */
 
 const path = require("path");
-const packageJson = require("./package.json");
-const libraryName = packageJson.name;
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const sourceDir = path.resolve(__dirname, "src/");
 const outputDir = path.resolve(__dirname, "dist/");
@@ -11,14 +10,8 @@ module.exports = {
     entry: sourceDir + "/index.js",
     output: {
         path: outputDir,
-        filename: libraryName + ".js",
-        library: libraryName,
-        libraryTarget: "umd",
-        umdNamedDefine: true
+        filename: "[name].bundle.js"
     },
-    externals: [
-        "d3"
-    ],
     module: {
         rules: [{
             test: /\.js$/,
@@ -42,5 +35,9 @@ module.exports = {
         }]
     },
     devtool: "source-maps",
-    plugins: []
+    plugins: [
+        new HtmlWebpackPlugin({
+            template: sourceDir + "/index.html"
+        })
+    ]
 };

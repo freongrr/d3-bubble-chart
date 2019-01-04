@@ -73,5 +73,6 @@ export function createAxes(svg, xScale, yScale) {
         }
     };
 
+    // TODO : expose label format functions
     return self;
 }

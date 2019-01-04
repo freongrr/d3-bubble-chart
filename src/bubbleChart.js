@@ -163,7 +163,7 @@ export function createChart(container) {
         return ids;
     }
 
-    // Delay the first refresh to scale everything to the container
+    // HACK - delay the first refresh to scale everything to the container
     setTimeout(() => resizeAndRefresh(), 1);
 
     // TODO : monitor changes in the size of the container instead! 

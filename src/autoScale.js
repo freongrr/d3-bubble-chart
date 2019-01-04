@@ -13,7 +13,6 @@ export function adjustScale(scale, data, getter, options) {
     const [newMin, newMax] = getExtent(oldMin, oldMax, min, max, options);
     if (newMin !== oldMin || newMax !== oldMax) {
         const margin = max === min ? (max * options.marginRatio) : (max - min) * options.marginRatio;
-        // TODO : smooth transition
         scale.domain([min - margin, max + margin]);
         return true;
     } else {
