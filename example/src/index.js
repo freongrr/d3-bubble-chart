@@ -23,6 +23,10 @@ chart.tooltip()
                <li>Size: ${parseInt(d.size)}</li>
             </ul>`);
 
+chart.on("select", (selectedIds) => {
+    console.log("Selection has changed:", selectedIds);
+});
+
 // Initial data
 refreshData();
 

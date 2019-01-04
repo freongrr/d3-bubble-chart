@@ -1,19 +1,25 @@
 import * as d3 from "d3";
+import debounce from "lodash.debounce";
 import "./bubbleChart.css";
 import {createSelectionBox} from "./selectionBox";
 import {createTooltip} from "./tooltip";
 import {adjustScale} from "./autoScale";
 import {createAxes} from "./twoAxes";
+import EventManager from "./eventManager";
 
 const SELECTED_ATTRIBUTE = "_selected";
 const BUBBLE_SIZE_SCALE = 0.075;
 const BUBBLE_TRANSITION_DURATION = 200;
+
+const SELECT_EVENT = "select";
 
 export function createChart(container) {
     const xScale = d3.scaleLinear();
     const yScale = d3.scaleLinear();
     const colorScale = d3.scaleLinear().range(["#30bf30", "#bf3030"]);
     const sizeScale = d3.scaleLog();
+
+    const eventManager = new EventManager([SELECT_EVENT]);
 
     const svg = d3.select(container)
         .append("svg")
@@ -31,13 +37,24 @@ export function createChart(container) {
 
     const bubbleTooltip = createTooltip(container);
 
+    const fireSelectEvent = debounce(() => {
+        eventManager.fireEvent(SELECT_EVENT, getSelectedIds());
+    }, 100);
+
     function onSelectionChange(left, top, right, bottom) {
         bubbleSelection.each(d => {
             const scaledX = xScale(d.x);
             const scaledY = yScale(d.y);
-            d[SELECTED_ATTRIBUTE] = (scaledX >= left) && (scaledX < right) && (scaledY >= top) && (scaledY < bottom);
+            setSelection(d, (scaledX >= left) && (scaledX < right) && (scaledY >= top) && (scaledY < bottom));
         });
         refreshSelection();
+    }
+
+    function setSelection(data, newSelection) {
+        if (data[SELECTED_ATTRIBUTE] !== newSelection) {
+            data[SELECTED_ATTRIBUTE] = newSelection;
+            fireSelectEvent();
+        }
     }
 
     function refreshSelection() {
@@ -74,10 +91,14 @@ export function createChart(container) {
     }
 
     function setData(newData) {
-        const selectedIds = getSelectedIds();
+        const selectedIdSet = new Set(getSelectedIds());
 
         // Reset the _selected flag on the data
-        newData = newData.map(d => ({...d, [SELECTED_ATTRIBUTE]: selectedIds.indexOf(d.id) >= 0}));
+        newData = newData.map(d => {
+            const selected = selectedIdSet.has(d.id);
+            selectedIdSet.delete(d.id);
+            return {...d, [SELECTED_ATTRIBUTE]: selected};
+        });
 
         // Sort by reverse size to allow selection of smaller bubbles
         newData = newData.sort((a, b) => {
@@ -85,6 +106,16 @@ export function createChart(container) {
             return b.size - a.size;
         });
 
+        updateScales(newData);
+        renderBubbles(newData);
+
+        // Some of the selected data is gone
+        if (selectedIdSet.size > 0) {
+            fireSelectEvent();
+        }
+    }
+
+    function updateScales(newData) {
         let updateAxes = false;
         updateAxes |= adjustScale(xScale, newData, d => d.x);
         updateAxes |= adjustScale(yScale, newData, d => d.y);
@@ -95,8 +126,6 @@ export function createChart(container) {
         if (updateAxes) {
             axes.refresh();
         }
-
-        renderBubbles(newData);
     }
 
     function renderBubbles(newData) {
@@ -121,16 +150,21 @@ export function createChart(container) {
             .attr("class", "bubble")
             .on("click", clicked => {
                 const {ctrlKey, shiftKey} = d3.event;
-                let select = true;
-                // Toggle the selection when using a meta key or when it's the only selected bubble
-                if (ctrlKey || shiftKey || getSelectedIds().length === 1) {
-                    select = !clicked[SELECTED_ATTRIBUTE];
-                }
+                const selectedIds = getSelectedIds();
                 // Deselect everything else when not using a meta key
                 if (!ctrlKey && !shiftKey) {
-                    bubbleSelection.each(d => d[SELECTED_ATTRIBUTE] = false);
+                    bubbleSelection.each(d => {
+                        if (d !== clicked) {
+                            setSelection(d, false);
+                        }
+                    });
                 }
-                clicked[SELECTED_ATTRIBUTE] = select;
+                // Toggle the selection when using a meta key or when it's the only selected bubble
+                if (ctrlKey || shiftKey || selectedIds.length === 1) {
+                    setSelection(clicked, !clicked[SELECTED_ATTRIBUTE]);
+                } else {
+                    setSelection(clicked, true);
+                }
                 refreshSelection();
             })
             .call(selectionBox)
@@ -149,7 +183,8 @@ export function createChart(container) {
     }
 
     function setSelectedIds(selectedIds) {
-        bubbleSelection.each(d => d[SELECTED_ATTRIBUTE] = selectedIds.indexOf(d.id) >= 0);
+        const selectedIdSet = new Set(selectedIds);
+        bubbleSelection.each(d => d[SELECTED_ATTRIBUTE] = selectedIdSet.has(d.id));
         refreshSelection();
     }
 
@@ -185,6 +220,10 @@ export function createChart(container) {
                 setSelectedIds(ids);
                 return self;
             }
+        },
+        on: (eventType, callback) => {
+            eventManager.register(eventType, callback);
+            return self;
         },
         axes: () => axes,
         tooltip: () => bubbleTooltip,

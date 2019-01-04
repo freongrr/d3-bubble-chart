@@ -20,17 +20,19 @@ The `d3-bubble-chart` module only has one export:
   The data objects have to define the `id`, `x`, `y`, `z` and `size` attributes:
 
       {
-          id: "bubble1",
-          x: 1234,
-          y: 567,
-          z: 0.1,
-          size: 10.5,
-      };
+        id: "bubble1",
+        x: 1234,
+        y: 567,
+        z: 0.1,
+        size: 10.5
+      }
 
 * `chart.selectedIds([selectedIds])`
 
   If `selectedIds` is defined, replaces the selection and returns the chart object.
   Otherwise returns the ids of the selected objects. 
+  
+  Note: setting the selection manually does not trigger the `select` event.
 
 * `chart.axes()`
 
@@ -39,6 +41,18 @@ The `d3-bubble-chart` module only has one export:
 * `chart.tooltip()`
 
   Returns the object that renders the tooltip (see below).
+
+* `chart.on(type, listener)`
+
+  Registers a listener for the given event type.
+
+  The type must be one of the following:
+
+  * `select`: invoked with a list of selected id (potentially empty):
+
+        chart.on("select", (selectedIds) => {
+          console.log("User has changed the selection", selectedIds);
+        });
 
 Axes
 ----

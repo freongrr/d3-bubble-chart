@@ -1,22 +1,22 @@
 import * as d3 from "d3";
+import EventManager from "./eventManager";
+
+const CHANGE_EVENT = "change";
 
 // If I render the selection area above the elements I want to select then I can't get click events on them
 // But if I render the selection area below, I can't use the selection box when dragging on the elements.
 // This function combines d3-brush with d3-drag to overcome these 2 problems. 
 export function createSelectionBox(rectangle) {
 
-    const callbacks = {};
+    const eventManager = new EventManager([CHANGE_EVENT]);
 
     const brush = d3.brush()
         .on("start", () => {
             const {sourceEvent} = d3.event;
             const isMouseDown = sourceEvent && sourceEvent.type === "mousedown";
             if (isMouseDown) {
-                const cb = callbacks["change"];
-                if (cb) {
-                    // HACK : fire a dummy event to deselect everything 
-                    cb(0, 0, 0, 0);
-                }
+                // HACK : fire a dummy event to deselect everything 
+                eventManager.fireEvent(CHANGE_EVENT, 0, 0, 0, 0);
             }
         })
         .on("brush", onBrush)
@@ -30,11 +30,10 @@ export function createSelectionBox(rectangle) {
 
     function onBrush() {
         const extent = d3.event.selection;
-        const cb = callbacks["change"];
-        if (extent && cb) {
+        if (extent) {
             const [left, top] = extent[0];
             const [right, bottom] = extent[1];
-            cb(left, top, right, bottom);
+            eventManager.fireEvent(CHANGE_EVENT, left, top, right, bottom);
         }
     }
 
@@ -72,7 +71,7 @@ export function createSelectionBox(rectangle) {
     };
 
     self.on = (type, cb) => {
-        callbacks[type] = cb;
+        eventManager.register(type, cb);
         return self;
     };
 
