@@ -22,9 +22,9 @@ export function adjustScale(scale, data, getter, options) {
 
 function fixOptions(options = {}) {
     return {
-        marginRatio: options.marginRatio || DEFAULT_OPTIONS.marginRatio,
-        extendThreshold: options.extendThreshold || DEFAULT_OPTIONS.extendThreshold,
-        contractThreshold: options.contractThreshold || DEFAULT_OPTIONS.contractThreshold,
+        marginRatio: options.marginRatio === undefined || DEFAULT_OPTIONS.marginRatio,
+        extendThreshold: options.extendThreshold === undefined || DEFAULT_OPTIONS.extendThreshold,
+        contractThreshold: options.contractThreshold === undefined || DEFAULT_OPTIONS.contractThreshold,
     };
 }
 

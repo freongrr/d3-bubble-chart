@@ -17,7 +17,7 @@ export function createChart(container) {
     const xScale = d3.scaleLinear();
     const yScale = d3.scaleLinear();
     const colorScale = d3.scaleLinear().range(["#30bf30", "#bf3030"]);
-    const sizeScale = d3.scaleLog();
+    const sizeScale = d3.scaleLinear();
 
     const eventManager = new EventManager([SELECT_EVENT]);
 
