@@ -9,6 +9,7 @@ export function createTooltip(container) {
 
     let render = DEFAULT_RENDER_FN;
 
+    // TODO : better positioning when close to the edge of the screen (use an library?)
     const tooltipDiv = d3.select(container || "body")
         .append("div")
         .attr("class", "d3bc-tooltip")

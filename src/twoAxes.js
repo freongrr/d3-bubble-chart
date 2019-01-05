@@ -2,6 +2,7 @@ import * as d3 from "d3";
 
 const AXIS_MARGIN = {top: 20, right: 20, bottom: 50, left: 60};
 const UPDATE_DURATION = 200;
+const BOTTOM_TITLE_MARGIN = 5;
 
 export function createAxes(svg, xScale, yScale) {
 
@@ -30,7 +31,7 @@ export function createAxes(svg, xScale, yScale) {
 
         const axisWidth = width - AXIS_MARGIN.left - AXIS_MARGIN.right;
         xAxisText.transition().duration(UPDATE_DURATION)
-            .attr("transform", `translate(${AXIS_MARGIN.left + axisWidth / 2}, ${height - 10})`);
+            .attr("transform", `translate(${AXIS_MARGIN.left + axisWidth / 2}, ${height - BOTTOM_TITLE_MARGIN})`);
 
         yAxisGroup.transition().duration(UPDATE_DURATION)
             .attr("transform", `translate(${AXIS_MARGIN.left}, 0)`)
@@ -38,7 +39,6 @@ export function createAxes(svg, xScale, yScale) {
 
         const axisHeight = height - AXIS_MARGIN.top - AXIS_MARGIN.bottom;
         yAxisText.transition().duration(UPDATE_DURATION)
-            .attr("y", 10)
             .attr("x", -axisHeight / 2);
     }
 
