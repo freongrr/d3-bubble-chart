@@ -21,10 +21,11 @@ export function adjustScale(scale, data, getter, options) {
 }
 
 function fixOptions(options = {}) {
+    const getOrDefault = (value, defaultValue) => value === undefined ? defaultValue : value;
     return {
-        marginRatio: options.marginRatio === undefined || DEFAULT_OPTIONS.marginRatio,
-        extendThreshold: options.extendThreshold === undefined || DEFAULT_OPTIONS.extendThreshold,
-        contractThreshold: options.contractThreshold === undefined || DEFAULT_OPTIONS.contractThreshold,
+        marginRatio: getOrDefault(options.marginRatio, DEFAULT_OPTIONS.marginRatio),
+        extendThreshold: getOrDefault(options.extendThreshold, DEFAULT_OPTIONS.extendThreshold),
+        contractThreshold: getOrDefault(options.contractThreshold, DEFAULT_OPTIONS.contractThreshold),
     };
 }
 
@@ -38,29 +39,42 @@ export function getCurrentExtent(scale, options) {
 }
 
 export function getExtent(oldMin, oldMax, newMin, newMax, options) {
+    const oldRange = oldMax - oldMin;
     if (newMin === undefined || newMax === undefined) {
         return [oldMin, oldMax];
-    }
-
-    const oldRange = oldMax - oldMin;
-    const newRange = newMax - newMin;
-    if (oldRange === 0) {
+    } else if (oldRange === 0) {
         return [newMin, newMax];
     }
 
     const extent = [oldMin, oldMax];
-    const ratio = Math.abs(newRange - oldRange) / oldRange;
-    if (newMin !== oldMin) {
-        if (newMin < oldMin && ratio > options.extendThreshold) {
+    if (newMin < oldMin) {
+        const ratio = (oldMin - newMin) / oldRange;
+        // console.log(`Min bound extended: ${oldMin} -> ${newMin}, ratio=${ratio}`);
+        if (ratio > options.extendThreshold) {
+            // console.log("Keeping new (lower) min");
             extent[0] = newMin;
-        } else if (newMin > oldMin && ratio > options.contractThreshold) {
+        }
+    } else if (newMin > oldMin) {
+        const ratio = (newMin - oldMin) / oldRange;
+        // console.log(`Min bound contracted: ${oldMin} -> ${newMin}, ratio=${ratio}`);
+        if (ratio > options.contractThreshold) {
+            // console.log("Keeping new (higher) min");
             extent[0] = newMin;
         }
     }
-    if (newMax !== oldMax) {
-        if (newMax > oldMax && ratio > options.extendThreshold) {
+
+    if (newMax > oldMax) {
+        const ratio = (newMax - oldMax) / oldRange;
+        // console.log(`Max bound extended: ${oldMax} -> ${newMax}, ratio=${ratio}`);
+        if (ratio > options.extendThreshold) {
+            // console.log("Keeping new (higher) max");
             extent[1] = newMax;
-        } else if (newMax < oldMax && ratio > options.contractThreshold) {
+        }
+    } else if (newMax < oldMax) {
+        const ratio = (oldMax - newMax) / oldRange;
+        // console.log(`Min bound contracted: ${oldMin} -> ${newMin}, ratio=${ratio}`);
+        if (ratio > options.contractThreshold) {
+            // console.log("Keeping new (lower) max");
             extent[1] = newMax;
         }
     }
