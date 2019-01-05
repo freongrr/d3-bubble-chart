@@ -5,26 +5,25 @@ export default class EventManager {
         this.listeners = {};
     }
 
-    fireEvent(type) {
-        if (this.listeners[type]) {
+    fireEvent(eventType) {
+        const listener = this.listeners[eventType];
+        if (listener) {
             const copyOfArguments = [...arguments];
             copyOfArguments.shift();
-            this.listeners[type].forEach(l => {
-                try {
-                    l.apply(null, copyOfArguments);
-                } catch (e) {
-                    console.error(`Error in '${type}' event listener`, e);
-                }
-            });
+            try {
+                listener.apply(null, copyOfArguments);
+            } catch (e) {
+                console.error(`Error in '${eventType}' event listener`, e);
+            }
         }
     }
 
     register(eventType, listener) {
         if (this.supportedEventTypes.has(eventType)) {
-            if (this.listeners[eventType]) {
-                this.listeners[eventType].push(listener);
+            if (listener) {
+                this.listeners[eventType] = listener;
             } else {
-                this.listeners[eventType] = [listener];
+                delete this.listeners[eventType];
             }
         } else {
             console.warn("Unsupported event type: " + eventType);

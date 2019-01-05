@@ -47,7 +47,9 @@ Chart
 
 * `chart.on(type, listener)`
 
-  Registers a listener for the given event type.
+  Registers a listener for the given event type. This replaces the previously
+  registered listener if there was any. To unregister a listener, pass `null`
+  as the second argument.
 
   The type must be one of the following:
 
