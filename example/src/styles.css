@@ -34,6 +34,10 @@ body > div {
     fill: #AAA;
 }
 
+#root .d3bc-bubble-selected {
+    stroke: cyan;
+}
+
 #root .d3bc-selectionRectangle .selection {
     fill: white;
     fill-opacity: 0.4;
