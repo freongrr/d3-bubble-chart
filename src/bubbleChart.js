@@ -14,6 +14,10 @@ const BUBBLE_TRANSITION_DURATION = 200;
 const SELECT_EVENT = "select";
 
 export function createChart(container) {
+    // TODO : make scales configurable
+    // - log/linear
+    // - colors
+    // - min/max size?
     const xScale = d3.scaleLinear();
     const yScale = d3.scaleLinear();
     const colorScale = d3.scaleLinear().range(["#30bf30", "#bf3030"]);
@@ -23,12 +27,12 @@ export function createChart(container) {
 
     const svg = d3.select(container)
         .append("svg")
-        .attr("class", "bubbleChart");
+        .attr("class", "d3bc-chart");
 
-    let bubbleSelection = svg.selectAll(".bubble");
+    let bubbleSelection = svg.selectAll(".d3bc-bubble");
 
     const selectionRectangle = svg.append("g")
-        .attr("class", "selectionRectangle");
+        .attr("class", "d3bc-selectionRectangle");
 
     const selectionBox = createSelectionBox(selectionRectangle)
         .on("change", onSelectionChange);
@@ -58,7 +62,7 @@ export function createChart(container) {
     }
 
     function refreshSelection() {
-        bubbleSelection.classed("selected", d => d[SELECTED_ATTRIBUTE]);
+        bubbleSelection.classed("d3bc-bubble-selected", d => d[SELECTED_ATTRIBUTE]);
     }
 
     function resizeAndRefresh() {
@@ -147,7 +151,7 @@ export function createChart(container) {
         // Create elements for new what has been added to the selection
         const newSelection = updatedSelection.enter()
             .append("circle")
-            .attr("class", "bubble")
+            .attr("class", "d3bc-bubble")
             .on("click", clicked => {
                 const {ctrlKey, shiftKey} = d3.event;
                 const selectedIds = getSelectedIds();

@@ -12,6 +12,9 @@ The `d3-bubble-chart` module only has one export:
 
   Renders a new bubble chart in the given container and returns an instance of the chart.
 
+Chart
+###
+
 * `chart.data([newData])`
 
   If `newData` is specified, replaces the data shows in the graph and returns the chart object.
@@ -55,7 +58,7 @@ The `d3-bubble-chart` module only has one export:
         });
 
 Axes
-----
+###
 
 The X and Y axes are controlled by a single object that exposes the following methods: 
 
@@ -78,7 +81,7 @@ The X and Y axes are controlled by a single object that exposes the following me
   The format can be a pattern or a function (see https://github.com/d3/d3-format).
 
 Tooltip
--------
+###
 
 * `tooltip.render([function])`
 
@@ -86,6 +89,21 @@ Tooltip
   Otherwise return the current render function (defaults to `Object.toString`).
 
       chart.tooltip().render(d => `Element ${d.id}`);
+
+CSS styles
+------------
+
+* `.d3bc-chart`: chart background
+* `.d3bc-axisLayer path`: axis line
+* `.d3bc-axisLayer line`: axis tick
+* `.d3bc-axisLayer text`: axis tick label
+* `.d3bc-axisTitle`: axis title
+* `.d3bc-bubble`: base bubble
+* `.d3bc-bubble:hover`: focused bubble 
+* `.d3bc-bubble-selected`: selected bubble
+* `.d3bc-selectionRectangle .selection`: selection box 
+* `.d3bc-tooltip`: tooltip positioning
+* `.d3bc-tooltip-content`: tooltip content
 
 Example
 -------

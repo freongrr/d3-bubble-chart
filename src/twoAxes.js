@@ -6,19 +6,19 @@ const UPDATE_DURATION = 200;
 export function createAxes(svg, xScale, yScale) {
 
     const axisLayer = svg.append("g")
-        .attr("class", "axisLayer");
+        .attr("class", "d3bc-axisLayer");
 
     const xAxis = d3.axisBottom(xScale);
     const xAxisGroup = axisLayer.append("g");
     const xAxisText = axisLayer.append("text")
-        .attr("class", "title");
+        .attr("class", "d3bc-axisTitle");
 
     const yAxis = d3.axisLeft(yScale);
     const yAxisGroup = axisLayer.append("g");
     const yAxisText = axisLayer.append("text")
         .attr("transform", "rotate(-90)")
         .attr("dy", "1em")
-        .attr("class", "title");
+        .attr("class", "d3bc-axisTitle");
 
     function resize(width, height) {
         xScale.range([AXIS_MARGIN.left, width - AXIS_MARGIN.right]);

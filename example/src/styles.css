@@ -7,13 +7,44 @@ body {
     overflow: hidden;
 }
 
+body * {
+    font-family: sans-serif;
+}
+
 body > div {
     padding: 0.5em 0 0 1em;
-    font-family: sans-serif;
 }
 
 #root {
     flex-grow: 1;
     padding: 20px;
     box-sizing: border-box;
+}
+
+#root .d3bc-chart {
+    background-color: hsl(200, 15%, 15%);
+}
+
+#root .d3bc-axisLayer path,
+#root .d3bc-axisLayer line {
+    stroke: #AAA;
+}
+
+#root .d3bc-axisLayer text {
+    fill: #AAA;
+}
+
+#root .d3bc-selectionRectangle .selection {
+    fill: white;
+    fill-opacity: 0.4;
+}
+
+#root .d3bc-tooltip-content {
+    background: #333;
+    color: #CCC;
+    box-shadow: 4px 4px 4px 0 rgba(0, 0, 0, 0.5);
+}
+
+#root .d3bc-tooltip-content ul {
+    padding: 0 1em;
 }

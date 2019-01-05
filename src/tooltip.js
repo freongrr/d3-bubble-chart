@@ -11,7 +11,7 @@ export function createTooltip(container) {
 
     const tooltipDiv = d3.select(container || "body")
         .append("div")
-        .attr("class", "tooltip")
+        .attr("class", "d3bc-tooltip")
         .style("opacity", 0);
 
     function onMouseOver(d) {
@@ -21,7 +21,7 @@ export function createTooltip(container) {
             .transition()
             .duration(SHOW_DURATION)
             .style("opacity", 0.9);
-        tooltipDiv.html(() => render(d))
+        tooltipDiv.html(() => `<div class="d3bc-tooltip-content">${render(d)}</div>`)
             .style("left", (x + 10) + "px")
             .style("top", (y + 10) + "px");
     }
@@ -37,11 +37,11 @@ export function createTooltip(container) {
             .on("mouseout", onMouseOut);
     };
 
-    self.render = fn => {
-        if (fn === undefined) {
+    self.render = (renderFunction) => {
+        if (renderFunction === undefined) {
             return render;
         } else {
-            render = fn;
+            render = renderFunction;
             return self;
         }
     };
