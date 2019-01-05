@@ -1,6 +1,6 @@
 {
   "name": "d3-bubble-chart",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "scripts": {
     "build": "webpack --mode production --progress --colors",
     "stats": "webpack --mode production --progress --colors --display-error-details --profile --json > stats.json",
