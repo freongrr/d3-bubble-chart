@@ -70,7 +70,13 @@ export function createAxes(svg, xScale, yScale) {
                 yAxisText.text(title);
                 return self;
             }
-        }
+        },
+        xFormat: (format) => {
+            return xAxis.tickFormat(format);
+        },
+        yFormat: (format) => {
+            return yAxis.tickFormat(format);
+        },
     };
 
     // TODO : expose label format functions

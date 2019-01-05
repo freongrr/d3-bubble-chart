@@ -69,6 +69,14 @@ The X and Y axes are controlled by a single object that exposes the following me
         .xTitle("Time (s)")
         .yTitle("Money ($)");
 
+* `axes.xFormat([format])`
+* `axes.yFormat([format])`
+
+  If `format` is defined, sets the format function of the labels on the axis.
+  Otherwise returns the current format.
+  
+  The format can be a pattern or a function (see https://github.com/d3/d3-format).
+
 Tooltip
 -------
 
