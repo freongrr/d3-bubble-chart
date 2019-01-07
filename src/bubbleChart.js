@@ -95,9 +95,8 @@ export function createChart(container) {
     }
 
     function setData(newData) {
-        const selectedIdSet = new Set(getSelectedIds());
-
         // Reset the _selected flag on the data
+        const selectedIdSet = new Set(getSelectedIds());
         newData = newData.map(d => {
             const selected = selectedIdSet.has(d.id);
             selectedIdSet.delete(d.id);
@@ -112,11 +111,6 @@ export function createChart(container) {
 
         updateScales(newData);
         renderBubbles(newData);
-
-        // Some of the selected data is gone
-        if (selectedIdSet.size > 0) {
-            fireSelectEvent();
-        }
     }
 
     function updateScales(newData) {
