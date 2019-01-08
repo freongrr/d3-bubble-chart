@@ -8,6 +8,7 @@ import {createAxes} from "./twoAxes";
 import EventManager from "./eventManager";
 
 const SELECTED_ATTRIBUTE = "_selected";
+const BUBBLE_MIN_SIZE = 8;
 const BUBBLE_SIZE_SCALE = 0.075;
 const BUBBLE_TRANSITION_DURATION = 200;
 
@@ -73,7 +74,7 @@ export function createChart(container) {
 
         axes.resize(width, height);
 
-        sizeScale.range([5, (Math.min(width, height) * BUBBLE_SIZE_SCALE)]);
+        sizeScale.range([BUBBLE_MIN_SIZE, (Math.min(width, height) * BUBBLE_SIZE_SCALE)]);
 
         selectionBox.resize();
 
@@ -130,7 +131,7 @@ export function createChart(container) {
         updateAxes |= adjustScale(yScale, newData, d => d.y);
         // TODO : take in account the number of values in the domain (e.g. 3 or 4 colors)
         adjustScale(colorScale, newData, d => d.z);
-        adjustScale(sizeScale, newData, d => d.size, {marginRatio: 0});
+        adjustScale(sizeScale, newData, d => d.size, {marginRatio: 0.05});
 
         if (updateAxes) {
             axes.refresh();
