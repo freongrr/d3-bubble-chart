@@ -209,6 +209,7 @@ export function createChart(container) {
 
     // HACK - delay the first refresh to scale everything to the container
     setTimeout(() => resizeAndRefresh(), 1);
+    setTimeout(() => resizeAndRefresh(), 100);
 
     // TODO : monitor changes in the size of the container instead! 
     window.addEventListener("resize", resizeAndRefresh);
