@@ -83,15 +83,26 @@ export function createChart(container) {
     }
 
     function getElementSizeWithoutPadding(element) {
+        const width = container.clientWidth;
+        const height = container.clientHeight;
         const containerStyle = window.getComputedStyle(element, null);
-        const left = parseInt(containerStyle.getPropertyValue("padding-left").replace("px", ""));
-        const right = parseInt(containerStyle.getPropertyValue("padding-right").replace("px", ""));
-        const top = parseInt(containerStyle.getPropertyValue("padding-top").replace("px", ""));
-        const bottom = parseInt(containerStyle.getPropertyValue("padding-bottom").replace("px", ""));
+        const left = getPadding(containerStyle, "left");
+        const right = getPadding(containerStyle, "right");
+        const top = getPadding(containerStyle, "top");
+        const bottom = getPadding(containerStyle, "bottom");
         return {
-            width: container.clientWidth - left - right,
-            height: container.clientHeight - top - bottom
+            width: width - left - right,
+            height: height - top - bottom
         };
+    }
+
+    function getPadding(elementStyle, name) {
+        const string = elementStyle.getPropertyValue("padding-" + name);
+        if (string === undefined || string === "") {
+            return 0;
+        } else {
+            return parseFloat(string);
+        }
     }
 
     function setData(newData) {
