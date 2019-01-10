@@ -19,6 +19,7 @@ body > div {
     flex-grow: 1;
     padding: 20px;
     box-sizing: border-box;
+    display: flex;
 }
 
 #root .d3bc-chart {
