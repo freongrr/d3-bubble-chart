@@ -15,6 +15,8 @@ const BUBBLE_TRANSITION_DURATION = 200;
 const SELECT_EVENT = "select";
 
 export function createChart(container) {
+    let initialized = false;
+
     // TODO : make scales configurable
     // - log/linear
     // - colors
@@ -72,7 +74,7 @@ export function createChart(container) {
         svg.attr("width", width)
             .attr("height", height);
 
-        axes.resize(width, height);
+        axes.resize(width, height, initialized);
 
         sizeScale.range([BUBBLE_MIN_SIZE, (Math.min(width, height) * BUBBLE_SIZE_SCALE)]);
 
@@ -81,6 +83,8 @@ export function createChart(container) {
         // Set the same data to force a refresh
         const currentData = bubbleSelection.data();
         setData(currentData);
+
+        initialized = true;
     }
 
     function getElementSizeWithoutPadding(element) {
@@ -134,7 +138,7 @@ export function createChart(container) {
         adjustScale(sizeScale, newData, d => d.size, {marginRatio: 0.05});
 
         if (updateAxes) {
-            axes.refresh();
+            axes.refresh(initialized);
         }
     }
 
@@ -143,14 +147,14 @@ export function createChart(container) {
         const updatedSelection = bubbleSelection.data(newData, d => d.id);
 
         // Update current elements
-        updatedSelection.transition().duration(BUBBLE_TRANSITION_DURATION)
+        transition(updatedSelection)
             .attr("cx", d => xScale(d.x))
             .attr("cy", d => yScale(d.y))
             .attr("r", d => sizeScale(d.size))
             .style("fill", d => colorScale(d.z));
 
         // Delete elements that have been removed from the selection
-        updatedSelection.exit().transition().duration(BUBBLE_TRANSITION_DURATION)
+        transition(updatedSelection.exit())
             .attr("r", 0)
             .remove();
 
@@ -180,16 +184,23 @@ export function createChart(container) {
             .call(selectionBox)
             .call(bubbleTooltip);
 
-        newSelection
+        transition(newSelection
             .attr("cx", d => xScale(d.x))
             .attr("cy", d => yScale(d.y))
             .style("fill", d => colorScale(d.z))
-            .transition().duration(BUBBLE_TRANSITION_DURATION)
-            .attr("r", d => sizeScale(d.size));
+        ).attr("r", d => sizeScale(d.size));
 
         bubbleSelection = newSelection.merge(updatedSelection);
 
         bubbleSelection.order();
+    }
+
+    function transition(something) {
+        if (initialized) {
+            return something.transition().duration(BUBBLE_TRANSITION_DURATION);
+        } else {
+            return something;
+        }
     }
 
     function setSelectedIds(selectedIds) {
@@ -210,7 +221,7 @@ export function createChart(container) {
 
     // HACK - delay the first refresh to scale everything to the container
     setTimeout(() => resizeAndRefresh(), 1);
-    setTimeout(() => resizeAndRefresh(), 100);
+    setTimeout(() => resizeAndRefresh(), 500);
 
     // TODO : monitor changes in the size of the container instead! 
     window.addEventListener("resize", resizeAndRefresh);

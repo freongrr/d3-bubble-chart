@@ -21,35 +21,38 @@ export function createAxes(svg, xScale, yScale) {
         .attr("dy", "1em")
         .attr("class", "d3bc-axisTitle");
 
-    function resize(width, height) {
+    function resize(width, height, animate = false) {
         xScale.range([AXIS_MARGIN.left, width - AXIS_MARGIN.right]);
         yScale.range([height - AXIS_MARGIN.bottom, AXIS_MARGIN.top]);
 
-        xAxisGroup.transition().duration(UPDATE_DURATION)
+        transition(xAxisGroup, animate)
             .attr("transform", `translate(0, ${height - AXIS_MARGIN.bottom})`)
             .call(xAxis);
 
         const axisWidth = width - AXIS_MARGIN.left - AXIS_MARGIN.right;
-        xAxisText.transition().duration(UPDATE_DURATION)
+        transition(xAxisText, animate)
             .attr("transform", `translate(${AXIS_MARGIN.left + axisWidth / 2}, ${height - BOTTOM_TITLE_MARGIN})`);
 
-        yAxisGroup.transition().duration(UPDATE_DURATION)
+        transition(yAxisGroup, animate)
             .attr("transform", `translate(${AXIS_MARGIN.left}, 0)`)
             .call(yAxis);
 
         const axisHeight = height - AXIS_MARGIN.top - AXIS_MARGIN.bottom;
-        yAxisText.transition().duration(UPDATE_DURATION)
+        transition(yAxisText, animate)
             .attr("x", -axisHeight / 2);
     }
 
-    function refresh() {
-        xAxisGroup.transition()
-            .duration(UPDATE_DURATION)
-            .call(xAxis);
+    function refresh(animate = false) {
+        transition(xAxisGroup, animate).call(xAxis);
+        transition(yAxisGroup, animate).call(yAxis);
+    }
 
-        yAxisGroup.transition()
-            .duration(UPDATE_DURATION)
-            .call(yAxis);
+    function transition(something, animate) {
+        if (animate) {
+            return something.transition().duration(UPDATE_DURATION);
+        } else {
+            return something;
+        }
     }
 
     const self = {
